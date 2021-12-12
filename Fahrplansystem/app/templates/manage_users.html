@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div id="deleteUserSucceeded" class="alert alert-info hidden">Benutzer erfolgreich gelöscht.</div>
+    <div id="deleteUserFailed" class="alert alert-info hidden">Benutzer konnte nicht gelöscht werden.</div>
+    <h1>Benutzer verwalten</h1>
+    <div class="col-md-10">
+        <table class="table table-hover manage_employees">
+            <tr>
+                <th>Mitarbeiter ID</th>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>SVN</th>
+                <th>Funktion</th>
+                <th>Crew ID</th>
+                <th>Benutzer löschen</th>
+            </tr>
+            {% for employee in employees %}
+                <tr class="employee" employee_id="{{ employee.id }}">
+                    <td>{{ employee.id }}</td>
+                    <td>{{ employee.first_name }}</td>
+                    <td>{{ employee.last_name }}</td>
+                    <td>{{ employee.ssn }}</td>
+                    <td>{{ employee.employee_type }}</td>
+                    <td>{{ employee.crew_id }}</td>
+                    <td>
+                        <button class="delete_button" employee_id="{{ employee.id }}" test="1">
+                            <img src="{{ url_for('static', filename='images/red-x.png') }}" alt="Delete User" class="red-x">
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

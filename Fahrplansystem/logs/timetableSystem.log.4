@@ -1,0 +1,103 @@
+2021-12-12 11:38:10,418 ERROR: Exception on /register_new_user [POST] [in /Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py:1457]
+Traceback (most recent call last):
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/default.py", line 719, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.InterfaceError: Error binding parameter 0 - probably unsupported type.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/Users/alex/Developer/timetableSystem/app/routes.py", line 56, in register_new_user
+    db.session.commit()
+  File "<string>", line 2, in commit
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 1428, in commit
+    self._transaction.commit(_to_root=self.future)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 829, in commit
+    self._prepare_impl()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 808, in _prepare_impl
+    self.session.flush()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 3345, in flush
+    self._flush(objects)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 3485, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py", line 3445, in _flush
+    flush_context.execute()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/orm/persistence.py", line 1096, in _emit_insert_statements
+    c = connection._execute_20(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/sqlalchemy/engine/default.py", line 719, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.InterfaceError: (sqlite3.InterfaceError) Error binding parameter 0 - probably unsupported type.
+[SQL: INSERT INTO employee (id, ssn, first_name, last_name, employee_type, password_hash, crew_id) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: (<wtforms.fields.numeric.IntegerField object at 0x107bde940>, <wtforms.fields.numeric.IntegerField object at 0x107bde850>, <wtforms.fields.simple.StringField object at 0x107bde790>, <wtforms.fields.simple.StringField object at 0x107bde670>, <wtforms.fields.choices.SelectField object at 0x107bde580>, 'pbkdf2:sha256:260000$ifhqZbzbQ7g33NyI$c99122d92a0baadc6aeee78a66c5a48c92cf7ee4d56f921f1ba9e9f9be309984', <wtforms.fields.numeric.IntegerField object at 0x107bde490>)]
+(Background on this error at: https://sqlalche.me/e/14/rvf5)
+2021-12-12 11:39:59,656 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:41:05,981 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:42:07,248 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:44:10,578 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:44:42,623 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:45:32,336 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:46:09,867 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:48:41,674 INFO: Microblog startup [in /Users/alex/Developer/timetableSystem/app/__init__.py:52]
+2021-12-12 11:49:15,060 ERROR: Exception on /home [GET] [in /Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py:1457]
+Traceback (most recent call last):
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask_login/utils.py", line 272, in decorated_view
+    return func(*args, **kwargs)
+  File "/Users/alex/Developer/timetableSystem/app/routes.py", line 18, in home
+    return render_template('home')
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/templating.py", line 148, in render_template
+    ctx.app.jinja_env.get_or_select_template(template_name_or_list),
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/jinja2/environment.py", line 1068, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/jinja2/environment.py", line 997, in get_template
+    return self._load_template(name, globals)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/jinja2/environment.py", line 958, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/jinja2/loaders.py", line 125, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/templating.py", line 59, in get_source
+    return self._get_source_fast(environment, template)
+  File "/Users/alex/Developer/timetableSystem/venv/lib/python3.9/site-packages/flask/templating.py", line 95, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: home

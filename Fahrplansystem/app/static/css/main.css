@@ -1,0 +1,23 @@
+.train-image {
+    width: 50%;
+}
+
+.hidden {
+    display: none;
+}
+
+.red-x {
+    width: 20px;
+}
+
+.centered {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-button {
+    background-color: red;
+    padding: 20px;
+}
