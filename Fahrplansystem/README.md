@@ -3,5 +3,6 @@ Starten des Fahrplansystems:
 2. cd in Fahrplansystem
 3. python3 -m venv venv
 4. source venv/bin/activate
-5. pip3 install -r requirements.txt 
-6. flask run
+5. pip3 install -r requirements.txt
+6. source venv/bin/activate 
+7. flask run
