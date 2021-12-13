@@ -72,9 +72,11 @@ class Interval(db.Model):
     fromHour = db.Column(db.Integer)
     toHour = db.Column(db.Integer)
 
-
+#TODO: update fields of tour and trip so they match the form
 class Tour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    start = db.Column(db.String(64), nullable=False)
+    end = db.Column(db.String(64), nullable=False)
     interval = db.Column(db.Integer, db.ForeignKey('interval.id'))
     rushHourMultiplicator = db.Column(db.Float)
 

@@ -1,11 +1,11 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, jsonify, make_response
 from app import app, db
-from app.forms import LoginForm, RegisterNewUserForm
+from app.forms import LoginForm, RegisterNewUserForm, AddTourForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import Employee, Activity
+from app.models import Employee, Activity, Tour, Trip
 from sqlalchemy import desc, asc
-from werkzeug.urls import url_parse
-from datetime import datetime
+import requests
+import json
 
 
 def append_activity(message):
@@ -62,6 +62,7 @@ def logout():
 
 
 @app.route('/register_new_user', methods=['GET', 'POST'])
+@login_required
 def register_new_user():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
@@ -84,6 +85,7 @@ def register_new_user():
 
 
 @app.route('/manage_users', methods=['GET'])
+@login_required
 def manage_users():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
@@ -92,6 +94,7 @@ def manage_users():
 
 
 @app.route('/manage_users/<id>', methods=['DELETE'])
+@login_required
 def delete_user(id):
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
@@ -105,39 +108,83 @@ def delete_user(id):
         return render_template('manage_users.html'), 500
 
 
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('index'))
-#     form = RegistrationForm()
-#     if form.validate_on_submit():
-#         user = User(username=form.username.data, email=form.email.data)
-#         user.set_password(form.password.data)
-#         db.session.add(user)
-#         db.session.commit()
-#         flash('Congratulations, you are now a registered user!')
-#         return redirect(url_for('login'))
-#     return render_template('register.html', title='Register', form=form)
-
-
-@app.route('/employee/<id>')
+@app.route('/employee/<id>', methods=['GET'])
 @login_required
 def user(id):
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
     employee = Employee.query.filter_by(id=id).first_or_404()
     return render_template('employee.html', employee=employee)
 
-# @app.route('/edit_profile', methods=['GET', 'POST'])
-# @login_required
-# def edit_profile():
-#     form = EditProfileForm(current_user.username)
-#     if form.validate_on_submit():
-#         current_user.username = form.username.data
-#         current_user.about_me = form.about_me.data
-#         db.session.commit()
-#         flash('Your changes have been saved.')
-#         return redirect(url_for('edit_profile'))
-#     elif request.method == 'GET':
-#         form.username.data = current_user.username
-#         form.about_me.data = current_user.about_me
-#     return render_template('edit_profile.html', title='Edit Profile',
-#                            form=form)
+
+def get_route_choices(form):
+    routes_json = json.loads(requests.get(url_for('get_routes', _external=True)).text)
+    routes_choices = []
+    for route in routes_json['routes']:
+        value_and_label = route.get('start') + '-' + route.get('ende')
+        routes_choices.append((value_and_label, value_and_label))
+    form.route_choice.choices = routes_choices
+
+
+def get_train_choices(form):
+    trains_json = json.loads(requests.get(url_for('get_trains', _external=True)).text)
+    train_choices = []
+    for train in trains_json['trains']:
+        value_and_label = train.get('model') + ' ' + train.get('modelNr')
+        train_choices.append((value_and_label, value_and_label))
+    form.train_choice.choices = train_choices
+
+
+@app.route('/add_tour', methods=['GET', 'POST'])
+@login_required
+def add_tour():
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
+    form = AddTourForm()
+    get_route_choices(form)
+    get_train_choices(form)
+    if form.validate_on_submit():
+        tour = Tour()
+        db.session.add(tour)
+        db.session.commit()
+    return render_template('add_tour.html', form=form)
+
+
+@app.route('/manage_tours')
+@login_required
+def manage_tours():
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
+    return render_template('manage_tours.html')
+
+
+@app.route('/get_routes')
+def get_routes():
+    routes = {
+        "routes": [{
+                "start": "Linz",
+                "ende": "Wien"
+            },
+            {
+                "start": "Salzburg",
+                "ende": "Innsbruck"
+            }
+        ]
+    }
+    return make_response(jsonify(routes))
+
+
+@app.route('/get_trains')
+def get_trains():
+    trains = {
+        "trains": [{
+                "model": "ICE",
+                "modelNr": "391"
+            },
+            {
+                "model": "REX",
+                "modelNr": "981"
+            }
+        ]
+    }
+    return make_response(jsonify(trains))

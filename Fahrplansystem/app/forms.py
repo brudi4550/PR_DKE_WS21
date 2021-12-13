@@ -1,5 +1,6 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, IntegerField, PasswordField, BooleanField, SelectField
+from flask_wtf import Form, FlaskForm
+from wtforms import StringField, SubmitField, IntegerField, PasswordField, BooleanField, \
+    SelectField, DecimalField, DateField, TimeField, RadioField
 from wtforms.validators import DataRequired, Length
 from wtforms.validators import ValidationError, Email, EqualTo
 from app.models import Employee
@@ -39,35 +40,17 @@ class RegisterNewUserForm(FlaskForm):
         if employee is not None:
             raise ValidationError('Sozialversicherungsnummer muss eindeutig sein.')
 
-# class RegistrationForm(FlaskForm):
-#     employee_id = StringField('Employee ID', validators=[DataRequired()])
-#     password = PasswordField('Password', validators=[DataRequired()])
-#     password2 = PasswordField(
-#         'Repeat Password', validators=[DataRequired(), EqualTo('password')])
-#     submit = SubmitField('Register')
-#
-#     def validate_username(self, username):
-#         user = User.query.filter_by(username=username.data).first()
-#         if user is not None:
-#             raise ValidationError('Please use a different username.')
-#
-#     def validate_email(self, email):
-#         user = User.query.filter_by(email=email.data).first()
-#         if user is not None:
-#             raise ValidationError('Please use a different email address.')
 
-
-# class EditProfileForm(FlaskForm):
-#     username = StringField('Username', validators=[DataRequired()])
-#     about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
-#     submit = SubmitField('Submit')
-#
-#     def __init__(self, original_username, *args, **kwargs):
-#         super(EditProfileForm, self).__init__(*args, **kwargs)
-#         self.original_username = original_username
-#
-#     def validate_username(self, username):
-#         if username.data != self.original_username:
-#             user = User.query.filter_by(username=self.username.data).first()
-#             if user is not None:
-#                 raise ValidationError('Please use a different username.')
+class AddTourForm(FlaskForm):
+    route_choice = SelectField('Strecke auswählen', validators=[DataRequired()])
+    train_choice = SelectField('Zug auswählen', validators=[DataRequired()])
+    date = DateField('Datum auswählen', validators=[DataRequired()])
+    time = TimeField('Zeitpunkt auswählen', validators=[DataRequired()])
+    rush_hour_multiplicator = DecimalField('Stoßzeit-Multiplikator', validators=[DataRequired()])
+    assigned_crew = IntegerField('Bordpersonalteam zuteilen', validators=[DataRequired()])
+    repeat_choices = [
+        ('repeat', 'Wiederholen'),
+        ('onetime', 'Einmalig')
+    ]
+    repeat = RadioField('Fahrt wiederholen?', choices=repeat_choices, validators=[DataRequired()])
+    submit = SubmitField('Fahrt zum Fahrplan hinzufügen')
