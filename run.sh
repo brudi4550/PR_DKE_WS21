@@ -1,0 +1,2 @@
+cd Fahrplansystem
+flask run
