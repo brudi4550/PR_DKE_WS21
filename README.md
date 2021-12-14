@@ -8,4 +8,4 @@ Verantwortlicher Streckensystem: Thomas Weißenbacher
 Zum (erstmaligen) Starten des Systems:
 1. Repository klonen
 2. source install.sh
-3. . /run.sh
+3. ./run.sh
