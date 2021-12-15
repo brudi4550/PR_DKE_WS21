@@ -44,13 +44,11 @@ class RegisterNewUserForm(FlaskForm):
 class AddTourForm(FlaskForm):
     route_choice = SelectField('Strecke auswählen', validators=[DataRequired()])
     train_choice = SelectField('Zug auswählen', validators=[DataRequired()])
-    date = DateField('Datum auswählen', validators=[DataRequired()])
-    time = TimeField('Zeitpunkt auswählen', validators=[DataRequired()])
+    date = DateField('Datum der ersten Durchführung', validators=[DataRequired()])
+    time = TimeField('Zeitpunkt der ersten Durchführung', validators=[DataRequired()])
     rush_hour_multiplicator = DecimalField('Stoßzeit-Multiplikator', validators=[DataRequired()])
     assigned_crew = IntegerField('Bordpersonalteam zuteilen', validators=[DataRequired()])
-    repeat_choices = [
-        ('repeat', 'Wiederholen'),
-        ('onetime', 'Einmalig')
-    ]
-    repeat = RadioField('Fahrt wiederholen?', choices=repeat_choices, validators=[DataRequired()])
-    submit = SubmitField('Fahrt zum Fahrplan hinzufügen')
+    interval = IntegerField('Im Intervall von (Minuten):')
+    intervalFrom = IntegerField('Von Uhrzeit:')
+    intervalTo = IntegerField('Bis Uhrzeit:')
+    submit = SubmitField('Fahrt zum System hinzufügen')

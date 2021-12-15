@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from flask_login import UserMixin
 from app import login
-from hashlib import md5
 
 
 @login.user_loader
@@ -65,6 +64,7 @@ class Admin(Employee):
 class Crew(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employees = db.relationship('Employee', backref='crewMembers', lazy='dynamic')
+    trips = db.relationship('Trip', backref='assigned_crew', lazy='dynamic')
 
 
 class Interval(db.Model):
@@ -72,18 +72,20 @@ class Interval(db.Model):
     fromHour = db.Column(db.Integer)
     toHour = db.Column(db.Integer)
 
-#TODO: update fields of tour and trip so they match the form
+
 class Tour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start = db.Column(db.String(64), nullable=False)
     end = db.Column(db.String(64), nullable=False)
     interval = db.Column(db.Integer, db.ForeignKey('interval.id'))
-    rushHourMultiplicator = db.Column(db.Float)
+    rushHourMultiplicator = db.Column(db.Float, nullable=False)
+    trips = db.relationship('Trip', backref='tour', lazy='dynamic')
 
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     startTime = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    crew_id = db.Column(db.Integer, db.ForeignKey('crew.id'))
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 
     def __repr__(self):

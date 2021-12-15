@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div id="deleteCrewSucceeded" class="alert alert-info hidden">Bordpersonalteam wurde gelöscht.</div>
+    <div id="deleteCrewFailed" class="alert alert-info hidden">Bordpersonalteam konnte nicht gelöscht werden.</div>
+    <h1>Bordpersonalteams verwalten</h1>
+    <div class="col-md-12">
+        <table class="table table-hover manage_employees">
+            <tr>
+                <th>Bordpersonalteam ID</th>
+                <th>Mitarbeiter in diesem Team</th>
+                <th>Bordpersonalteam löschen</th>
+            </tr>
+            {% for crew in crews %}
+                <tr class="crew" crew_id="{{ crew.id }}">
+                    <td>{{ crew.id }}</td>
+                    <td>
+                        <table class="table table-hover">
+                            <tr>
+                                <th>ID</th>
+                                <th>Vorname</th>
+                                <th>Nachname</th>
+                                <th>SVN</th>
+                                <th>Funktion</th>
+                            </tr>
+                            {% for employee in crews.filter_by(id=crew.id).first().employees.all() %}
+                                <tr>
+                                    <td>{{ employee.id }}</td>
+                                    <td>{{ employee.first_name }}</td>
+                                    <td>{{ employee.last_name }}</td>
+                                    <td>{{ employee.ssn }}</td>
+                                    <td>{{ employee.employee_type }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                    <td>
+                        <button class="delete_button" crew_id="{{ crew.id }}">
+                            <img src="{{ url_for('static', filename='images/red-x.png') }}" alt="Delete Crew" class="red-x">
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

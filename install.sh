@@ -1,4 +1,6 @@
 #!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR"
 if command -v python3 | grep -q 'python3'; then
 	echo "Python 3 is installed"
 else
@@ -15,19 +17,25 @@ source venv/bin/activate
 install_dependencies () {
 	echo "Trying to install dependecies for $1"
 	if [ -d "$1" ]; then
-		echo "$1 directory found"
+		echo "	$1 directory found"
 		cd "$1"
 	else
-		echo "$1 directory could not be found, no dependencies will be installed"
+		echo -e "\033[0;31m	$1 directory could not be found, no dependencies will be installed\033[0m"
 		return
 	fi
 	if [ -f "requirements.txt" ]; then
- 		echo "Requirements file for $1 found"
- 		pip3 install -r requirements.txt &> /dev/null
-		echo "All requirements for $1 successfully installed"
+ 		echo "	Requirements file for $1 found"
+		pip3 install -r requirements.txt --force-reinstall &> /dev/null
+		retval=$?
+		if [ "$retval" -eq 0 ]; then
+    		echo -e "\033[0;36m	All requirements for $1 successfully installed\033[0m"
+		else
+			echo -e "\033[0;31m	Something went wrong\033[0m"
+			echo "	install exit code: $retval"
+		fi
 		cd ..
 	else
- 		echo "Requirements file for $1 not found, no dependencies will be installed"
+ 		echo -e "\033[0;31m	Requirements file for $1 not found, no dependencies will be installed\033[0m"
 		cd ..
 		return
 	fi
@@ -36,3 +44,4 @@ install_dependencies () {
 install_dependencies "Fahrplansystem"
 install_dependencies "Flottensystem"
 install_dependencies "Streckensystem"
+install_dependencies "Ticketsystem"

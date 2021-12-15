@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, jsonify, make_respo
 from app import app, db
 from app.forms import LoginForm, RegisterNewUserForm, AddTourForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import Employee, Activity, Tour, Trip
+from app.models import Activity, Employee, Tour, Trip, Interval, Crew
 from sqlalchemy import desc, asc
 import requests
 import json
@@ -76,6 +76,10 @@ def register_new_user():
                      crew_id=form.crew_id.data
                      )
         e.set_password(form.password.data)
+        enteredCrew = Crew.query.filter_by(id=form.crew_id.data).first()
+        if enteredCrew is None and form.crew_id.data != "":
+            crew = Crew(id=form.crew_id.data)
+            db.session.add(crew)
         db.session.add(e)
         db.session.commit()
         append_activity(f'Mitarbeiter {e.first_name} {e.last_name} hinzugefügt.')
@@ -115,6 +119,15 @@ def user(id):
         redirect(url_for('home'))
     employee = Employee.query.filter_by(id=id).first_or_404()
     return render_template('employee.html', employee=employee)
+
+
+@app.route('/manage_crews', methods=['GET'])
+@login_required
+def manage_crews():
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
+    crews = Crew.query.order_by(Crew.id.asc())
+    return render_template('manage_crews.html', crews=crews)
 
 
 def get_route_choices(form):

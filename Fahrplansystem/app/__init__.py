@@ -28,16 +28,6 @@ login.login_view = 'login'
 from app import routes, models, errors
 
 
-def print_query_result(query):
-    from sqlalchemy import text
-
-    sql = text(query)
-    result = list(db.engine.execute(sql))
-    print(len(result), ' rows found.')
-    for row in result:
-        print(row)
-
-
 if not app.debug:
     if not os.path.exists('logs'):
         os.mkdir('logs')
