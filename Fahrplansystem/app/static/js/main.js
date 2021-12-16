@@ -64,6 +64,12 @@ $(document).ready(function() {
         window.location = '/employee/' + employee_id;
     });
 
+    //Edit a tour
+    $('.manage_tours .edit_button').click(function() {
+        var tour_id = $(this).attr('tour_id');
+        window.location = '/manage_tours/' + tour_id;
+    });
+
     //show interval fields on choice repeat
     $('.repeat-tour-radio-buttons').click(function() {
         option = $('input[name=options]:checked', '#add-tour').val()

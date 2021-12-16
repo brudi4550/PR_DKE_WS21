@@ -26,7 +26,6 @@ install_dependencies () {
 		if [ "$retval" -eq 0 ]; then
     		echo -e "\033[0;36m	All requirements for $1 successfully installed\033[0m"
 		else
-			echo -e "\033[0;31m	Something went wrong\033[0m"
 			echo "	install exit code: $retval"
 		fi
 		cd ..
