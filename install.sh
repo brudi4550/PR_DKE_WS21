@@ -21,7 +21,7 @@ install_dependencies () {
 		return
 	fi
 	if [ -f "requirements.txt" ]; then
-		pip3 install -r requirements.txt --force-reinstall &> /dev/null
+		cat requirements.txt | xargs -n 1 pip3 install
 		retval=$?
 		if [ "$retval" -eq 0 ]; then
     		echo -e "\033[0;36m	All requirements for $1 successfully installed\033[0m"
