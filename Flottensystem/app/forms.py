@@ -17,9 +17,9 @@ class RegistrationForm(FlaskForm):
     vorname = StringField('Vorname', validators=[DataRequired()])
     nachname = StringField('Nachname', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    passwort = PasswordField('Passwort', validators=[DataRequired()])
+    passwort = PasswordField('Passwort', validators=[DataRequired(), Length(min=4)])
     passwort2 = PasswordField(
-        'Passwort wiederholen', validators=[DataRequired(), EqualTo('passwort')])
+        'Passwort wiederholen', validators=[DataRequired(), Length(min=4), EqualTo('passwort')])
     submit = SubmitField('Registrieren')
 
     def validate_mitarbeiterNr(self, mitarbeiterNr):
@@ -36,12 +36,12 @@ class RegistrationForm(FlaskForm):
                 raise ValidationError('Die Sozialversicherungsnummer muss eine zehnstellige Zahl sein und darf keine Buchstaben enthalten!')
         user = Mitarbeiter.query.filter_by(svnr=svnr.data).first()
         if user is not None:
-            raise ValidationError('Bitte geben sie eine andere Sozialversicherungsnummer ein.')
+            raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Sozialversicherungsnummer ein.')
 
     def validate_email(self, email):
         user = Mitarbeiter.query.filter_by(email=email.data).first()
         if user is not None:
-            raise ValidationError('Bitte geben sie eine andere Email Adresse ein.')
+            raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Email Adresse ein.')
             
 class RegistrationFormZugpersonal(FlaskForm):
     mitarbeiterNr = StringField('Mitarbeiternummer', validators=[DataRequired(), Length(min=8, max=8)]) 
@@ -50,9 +50,9 @@ class RegistrationFormZugpersonal(FlaskForm):
     nachname = StringField('Nachname', validators=[DataRequired()])
     berufsbezeichnung = StringField('Berufsbezeichnung', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    passwort = PasswordField('Passwort', validators=[DataRequired()])
+    passwort = PasswordField('Passwort', validators=[DataRequired(), Length(min=4)])
     passwort2 = PasswordField(
-        'Passwort wiederholen', validators=[DataRequired(), EqualTo('passwort')])
+        'Passwort wiederholen', validators=[DataRequired(), Length(min=4), EqualTo('passwort')])
     submit = SubmitField('Registrieren')
     
     def validate_mitarbeiterNr(self, mitarbeiterNr):
@@ -69,16 +69,16 @@ class RegistrationFormZugpersonal(FlaskForm):
                 raise ValidationError('Die Sozialversicherungsnummer muss eine zehnstellige Zahl sein und darf keine Buchstaben enthalten!')
         user = Mitarbeiter.query.filter_by(svnr=svnr.data).first()
         if user is not None:
-            raise ValidationError('Bitte geben sie eine andere Sozialversicherungsnummer ein.')
+            raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Sozialversicherungsnummer ein.')
 
     def validate_email(self, email):
         user = Mitarbeiter.query.filter_by(email=email.data).first()
         if user is not None:
-            raise ValidationError('Bitte geben sie eine andere Email Adresse ein.')
+            raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Email Adresse ein.')
             
             
 class EmptyForm(FlaskForm):
-    submit = SubmitField('Submit')
+    submit = SubmitField('Entfernen')
     
     
 class EditProfileForm(FlaskForm):
@@ -111,21 +111,21 @@ class EditProfileForm(FlaskForm):
         if int(svnr.data) != self.original_svnr:
             user = Mitarbeiter.query.filter_by(svnr=self.svnr.data).first()
             if user is not None:
-                raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Mitarbeiternummer ein.')
+                raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Sozialversicherungsnummer ein.')
                 
     def validate_email(self, email):
         if email.data != self.original_email:
             user = Mitarbeiter.query.filter_by(email=self.email.data).first()
             if user is not None:
-                raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Mitarbeiternummer ein.')
+                raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Email ein.')
                 
 class EditProfileFormZugpersonal(FlaskForm):
     mitarbeiterNr = StringField('Mitarbeiternummer', validators=[DataRequired(), Length(min=8, max=8)]) 
     svnr = StringField('Sozialversicherungsnummer', validators=[DataRequired(), Length(min=10, max=10)])
     vorname = StringField('Vorname', validators=[DataRequired()])
     nachname = StringField('Nachname', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
     berufsbezeichnung = StringField('Berufsbezeichnung', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Bestätigen')
 
     def __init__(self, original_mitarbeiterNr, original_svnr, original_email, *args, **kwargs):
@@ -150,10 +150,10 @@ class EditProfileFormZugpersonal(FlaskForm):
         if int(svnr.data) != self.original_svnr:
             user = Mitarbeiter.query.filter_by(svnr=self.svnr.data).first()
             if user is not None:
-                raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Mitarbeiternummer ein.')
+                raise ValidationError('Diese Sozialversicherungsnummer ist bereits vergeben. Bitte geben sie eine andere Sozialversicherungsnummer ein.')
                 
     def validate_email(self, email):
         if email.data != self.original_email:
             user = Mitarbeiter.query.filter_by(email=self.email.data).first()
             if user is not None:
-                raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Mitarbeiternummer ein.')
+                raise ValidationError('Diese Email ist bereits vergeben. Bitte geben sie eine andere Email ein.')

@@ -1,24 +1,30 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
+{% block app_content %}
     {% if typ == 'Administrator' %}
-    <h2>Hier können Sie Ihre Daten ansehen und gegebenfalls ändern:</h2>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        {% include 'mitarbeiter_form.html' %}
-    <table>
-        <tr>
-            <td>{{ form.submit() }}</td>
-    </form>
-            <form action="{{ url_for('deleteUser', mitarbeiterNr=current_user.mitarbeiterNr) }}" method="post">
-            {{ form.hidden_tag() }}
-                <td>{{ form.submit(value='Entfernen') }}</td>
+    <h3>Hier können Sie Ihre Daten ansehen und gegebenfalls ändern:</h3>
+    <div class="row">
+        <div class="col-md-4">
+            <form action="" method="post">
+                {% include 'mitarbeiter_form.html' %}
+                <table>
+                    <tr>
+                        <td width="100px">{{ wtf.form_field(form.submit) }}</td>
             </form>
-        </tr>
-    </table>
+                <form action="{{ url_for('deleteUser', mitarbeiterNr=current_user.mitarbeiterNr) }}" method="post">
+                    {{ form2.hidden_tag() }}
+                    {{ wtf.form_errors(form2, hiddens="only") }}
+                    
+                        <td>{{ wtf.form_field(form2.submit) }}</td>
+                    </tr>
+                </form>
+                </table>
+        </div>
+    </div>
     {% else %}
-    <h2>Hier können Sie Ihre Daten ansehen:</h2>
-    <table>
+    <h3>Hier können Sie sich Ihre Daten ansehen:</h3>
+    <table class="table table-hover">
         <tr>
             <td>Mitarbeiternummer:</td>
             <td>{{ current_user.mitarbeiterNr }}</td>
