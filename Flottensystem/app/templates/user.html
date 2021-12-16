@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if wartungspersonal == [] and zugpersonal == [] %}
+    <p>Keine Mitarbeiter zum bearbeiten verfügbar!</p>
+    <a href="{{ url_for('index_admin') }}">Zurück zur Startseite</a>
+    {% endif %}
+    <table>
+        <tr valign="top">
+            {% for w in wartungspersonal %}
+            <td>
+                <p>{{ w.vorname }} {{ w.nachname }}</p>
+                <p>Wartungspersonal</p>
+            </td>
+            <td>
+                <p>
+                    <form action="{{ url_for('editUser', mitarbeiterNr=w.mitarbeiterNr) }}" method="get">
+                        {{ form.hidden_tag() }}
+                        {{ form.submit(value='Bearbeiten') }}
+                    </form>
+                </p>
+                <p>
+                    <form action="{{ url_for('deleteUser', mitarbeiterNr=w.mitarbeiterNr) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        {{ form.submit(value='Entfernen') }}
+                    </form>
+                </p>
+            </td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for z in zugpersonal %}
+            <td>
+                <p>{{ z.vorname }} {{ z.nachname }}</p>
+                <p>Zugpersonal</p>
+            </td>
+            <td>
+                <p>
+                    <a href="{{ url_for('editUser', mitarbeiterNr=z.mitarbeiterNr) }}">
+                        {{ form.hidden_tag() }}
+                        {{ form.submit(value='Bearbeiten') }}
+                    </a>
+                </p>
+                <p>
+                    <form action="{{ url_for('deleteUser', mitarbeiterNr=z.mitarbeiterNr) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        {{ form.submit(value='Entfernen') }}
+                    </form>
+                </p>
+            </td>
+            {% endfor %}
+        </tr>
+    </table>
+{% endblock %}
