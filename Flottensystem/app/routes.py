@@ -9,41 +9,41 @@ from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator
 
 @app.route('/')
 @app.route('/Startseite')
-def index():
+def home():
     if current_user.is_authenticated:
         if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
-            next_page = url_for('index_admin')
+            next_page = url_for('home_admin')
         else:
-            next_page = url_for('index_personal')
+            next_page = url_for('home_personal')
         return redirect(next_page)
-    return render_template('index.html', title='Startseite - Flotteninformationssystem')
+    return render_template('home.html', title='Startseite - Flotteninformationssystem')
 
 
 @app.route('/Startseite/Admin')
 @login_required
-def index_admin():
+def home_admin():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um in die Administrator-Startseite zu gelangen!')
-        return redirect(url_for('index_personal'))
-    return render_template('index_administrator.html', title='Startseite - Flotteninformationssystem')
+        return redirect(url_for('home_personal'))
+    return render_template('home_administrator.html', title='Startseite - Flotteninformationssystem')
 
 
 @app.route('/Startseite/Personal')
 @login_required
-def index_personal():
+def home_personal():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
         flash('Sie sind als Administrator angemeldet!')
-        return redirect(url_for('index_admin'))
-    return render_template('index_personal.html', title='Startseite - Flotteninformationssystem')
+        return redirect(url_for('home_admin'))
+    return render_template('home_personal.html', title='Startseite - Flotteninformationssystem')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         if Administrator.query.filter(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
-            return redirect(url_for('index_admin'))
+            return redirect(url_for('home_admin'))
         else:
-            return redirect(url_for('index_personal'))
+            return redirect(url_for('home_personal'))
     form = LoginForm()
     if form.validate_on_submit():
         user = Mitarbeiter.query.filter_by(email=form.email.data).first()
@@ -54,9 +54,9 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             if Administrator.query.filter_by(mitarbeiterNr=user.mitarbeiterNr).first() is not None:
-                next_page = url_for('index_admin')
+                next_page = url_for('home_admin')
             else:
-                next_page = url_for('index_personal')
+                next_page = url_for('home_personal')
         return redirect(next_page)
     return render_template('login.html', title='Anmelden', form=form)
 
@@ -64,7 +64,7 @@ def login():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
 @app.route('/register')
@@ -72,7 +72,7 @@ def logout():
 def register():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen neuen Benutzer erstellen zu können!')
-        return redirect(url_for('index_personal'))
+        return redirect(url_for('home_personal'))
     return render_template('register.html', title='Benutzer erstellen')
 
 
@@ -81,7 +81,7 @@ def register():
 def registerUser(name):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen neuen Benutzer erstellen zu können!')
-        return redirect(url_for('index_personal'))
+        return redirect(url_for('home_personal'))
     if name == 'Zugpersonal':
         form = RegistrationFormZugpersonal()
     else:
@@ -106,7 +106,7 @@ def registerUser(name):
 def updateUser():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer bearbeiten zu können!')
-        return redirect(url_for('index_personal'))
+        return redirect(url_for('home_personal'))
     wartungspersonal = Wartungspersonal.query.all()
     zugpersonal = Zugpersonal.query.all()
     form = EmptyForm()
@@ -118,7 +118,7 @@ def updateUser():
 def editUser(mitarbeiterNr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer bearbeiten zu können!')
-        return redirect(url_for('index_personal'))
+        return redirect(url_for('home_personal'))
     user = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
     if user is None:
         flash('Es wurde kein Mitarbeiter unter der Mitarbeiternummer {} gefunden!'.format(mitarbeiterNr))
@@ -158,7 +158,7 @@ def editUser(mitarbeiterNr):
 def deleteUser(mitarbeiterNr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer löschen zu können!')
-        return redirect(url_for('index_personal'))
+        return redirect(url_for('home_personal'))
     form=EmptyForm()
     if form.validate_on_submit():
         mitarbeiter = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
@@ -184,6 +184,7 @@ def profile():
     if type(user) == Administrator:
         typ = 'Administrator'
         form = EditProfileForm(user.mitarbeiterNr, user.svnr, user.email)
+        form2 = EmptyForm()
     elif type(user) == Wartungspersonal:
         typ = 'Wartungspersonal'
     else:
@@ -197,7 +198,7 @@ def profile():
         user.email = form.email.data
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
-        return redirect(url_for('index_admin'))
+        return redirect(url_for('home_admin'))
         
     if type(user) == Administrator and request.method == 'GET':
         form.mitarbeiterNr.data = user.mitarbeiterNr
@@ -207,6 +208,6 @@ def profile():
         form.email.data = user.email
         
     if type(user) == Administrator:
-        return render_template('profile.html', form=form, typ=typ)
+        return render_template('profile.html', form=form, form2=form2, typ=typ)
     else:
         return render_template('profile.html', typ=typ)

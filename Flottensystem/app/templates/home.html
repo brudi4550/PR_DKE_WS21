@@ -1,0 +1,11 @@
+{% extends 'bootstrap/base.html' %}
+{% block title %}
+    Wilkommen im Flotteninformationssystem
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h3>Wilkommen im Flotteninformationsystem!</h3>
+        <p>Um Ihnen Zugriff auf die Webseite geben zu können, müssen Sie sich anmelden.</p>
+        <p>Sie können sich <a href="{{ url_for('login') }}">hier</a> anmelden.</p>
+{% endblock %}
