@@ -1,0 +1,44 @@
+        <p>
+            {{ form.mitarbeiterNr.label }}<br>
+            {{ form.mitarbeiterNr(size=32) }}<br>
+            {% for error in form.mitarbeiterNr.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.svnr.label }}<br>
+            {{ form.svnr(size=32) }}<br>
+            {% for error in form.svnr.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.vorname.label }}<br>
+            {{ form.vorname(size=32) }}<br>
+            {% for error in form.vorname.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.nachname.label }}<br>
+            {{ form.nachname(size=32) }}<br>
+            {% for error in form.nachname.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        {% if typ == 'Zugpersonal' %}
+        <p>
+            {{ form.berufsbezeichnung.label }}<br>
+            {{ form.berufsbezeichnung(size=32) }}<br>
+            {% for error in form.berufsbezeichnung.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+        <p>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+            {% for error in form.email.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>

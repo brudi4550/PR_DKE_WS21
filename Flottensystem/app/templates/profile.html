@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if typ == 'Administrator' %}
+    <h2>Hier können Sie Ihre Daten ansehen und gegebenfalls ändern:</h2>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        {% include 'mitarbeiter_form.html' %}
+    <table>
+        <tr>
+            <td>{{ form.submit() }}</td>
+    </form>
+            <form action="{{ url_for('deleteUser', mitarbeiterNr=current_user.mitarbeiterNr) }}" method="post">
+            {{ form.hidden_tag() }}
+                <td>{{ form.submit(value='Entfernen') }}</td>
+            </form>
+        </tr>
+    </table>
+    {% else %}
+    <h2>Hier können Sie Ihre Daten ansehen:</h2>
+    <table>
+        <tr>
+            <td>Mitarbeiternummer:</td>
+            <td>{{ current_user.mitarbeiterNr }}</td>
+        <tr>
+            <td>Sozialversicherungsnummer:</td>
+            <td>{{ current_user.svnr }}</td>
+        <tr>
+            <td>Vorname:</td>
+            <td>{{ current_user.vorname }}</td>
+        <tr>
+            <td>Nachname:</td>
+            <td>{{ current_user.nachname }}</td>
+        <tr>
+            <td>Email:</td>
+            <td>{{ current_user.email }}</td>
+        <tr>
+            <td>Beruf:</td>
+            <td>
+                {% if typ == 'Wartungspersonal' %}
+                {{ typ }}
+                {% else %}
+                {{ current_user.berufsbezeichnung }}
+                {% endif %}
+            </td>
+    {% endif %}
+{% endblock %}

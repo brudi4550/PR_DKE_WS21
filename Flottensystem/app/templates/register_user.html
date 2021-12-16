@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if typ == 'Administrator' %}
+    <h2>Neuen Administrator erstellen:</h2>
+    {% elif typ == 'Wartungspersonal' %}
+    <h2>Neues Wartungspersonal erstellen:</h2>
+    {% elif typ == 'Zugpersonal' %}
+    <h2>Neues Zugpersonal erstellen:</h2>
+    {% endif %}
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        {% include 'mitarbeiter_form.html' %}
+        <p>
+            {{ form.passwort.label }}<br>
+            {{ form.passwort(size=32) }}<br>
+            {% for error in form.passwort.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.passwort2.label }}<br>
+            {{ form.passwort2(size=32) }}<br>
+            {% for error in form.passwort2.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
