@@ -1,9 +1,7 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "$SCRIPT_DIR"
-if command -v python3 | grep -q 'python3'; then
-	echo "Python 3 is installed"
-else
+if ! command -v python3 | grep -q 'python3'; then
 	echo "Python 3 needs to be installed for this script to work"
 	exit 1
 fi
@@ -17,14 +15,12 @@ source venv/bin/activate
 install_dependencies () {
 	echo "Trying to install dependecies for $1"
 	if [ -d "$1" ]; then
-		echo "	$1 directory found"
 		cd "$1"
 	else
 		echo -e "\033[0;31m	$1 directory could not be found, no dependencies will be installed\033[0m"
 		return
 	fi
 	if [ -f "requirements.txt" ]; then
- 		echo "	Requirements file for $1 found"
 		pip3 install -r requirements.txt --force-reinstall &> /dev/null
 		retval=$?
 		if [ "$retval" -eq 0 ]; then

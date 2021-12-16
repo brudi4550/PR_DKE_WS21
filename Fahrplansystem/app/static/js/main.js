@@ -15,7 +15,7 @@ $(document).ready(function() {
         });
     })(jQuery);
 
-    //Delete a user on button click functionality
+    //Delete a user on button click
     $('.manage_employees .delete_button').click(function() {
         if (!window.confirm("Sind Sie sich sicher?")) {
             return
@@ -31,6 +31,28 @@ $(document).ready(function() {
                     },
                     500: function() {
                         $("#deleteUserFailed").temporaryRemoveClass("hidden", 3000);
+                    }
+                }
+            });
+    });
+
+    //Delete tour on button click
+    $('.manage_tours .delete_button').click(function() {
+        if (!window.confirm("Sind Sie sich sicher?")) {
+            return
+        }
+        var tour_id = $(this).attr('tour_id')
+        console.log('clicked delete on '+ tour_id)
+        var ajaxReq = $.ajax({
+                url: '/manage_tours/'+tour_id,
+                type: 'DELETE',
+                statusCode: {
+                    200: function() {
+                        $("#deleteTourSucceeded").temporaryRemoveClass("hidden", 3000);
+                        $(".manage_tours tr[tour_id=" + tour_id + "]").addClass("hidden");
+                    },
+                    500: function() {
+                        $("#deleteTourFailed").temporaryRemoveClass("hidden", 3000);
                     }
                 }
             });
@@ -53,9 +75,6 @@ $(document).ready(function() {
             $('#interval-from').addClass('hidden');
             $('#interval-to').addClass('hidden');
             $('#interval').addClass('hidden');
-            $('#interval-from').trigger('reset');
-            $('#interval-to').trigger('reset');
-            $('#interval').trigger('reset');
         }
     });
 });

@@ -21,7 +21,6 @@ check_connection () {
 run_server () {
     echo "Trying to run $1 on port $2"
     if [ -d "$1" ]; then
-	    echo "  $1 directory found"
         cd "$1"
     else
         echo -e "\033[0;31m  $1 directory not found, not starting server\033[0m"
@@ -33,7 +32,6 @@ run_server () {
         return
     fi
     if [ -f ".flaskenv" ]; then
-	    echo "  .flaskenv file for $1 system found"
         if [ "$QUIET" = false ]; then
             flask run -p $2 > /dev/null &    
         else

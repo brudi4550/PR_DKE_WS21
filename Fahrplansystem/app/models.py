@@ -84,7 +84,8 @@ class Tour(db.Model):
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    startTime = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    date = db.Column(db.Date, index=True, default=datetime.date)
+    time = db.Column(db.Time, index=True, default=datetime.time)
     crew_id = db.Column(db.Integer, db.ForeignKey('crew.id'))
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 

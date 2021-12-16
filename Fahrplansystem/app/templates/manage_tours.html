@@ -1,8 +1,43 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div class="col-md-6">
-        <p>this is the manage tours page</p>
+    <div id="deleteTourSucceeded" class="alert alert-info hidden">Fahrt und alle dazugehörigen Durchführungen wurden gelöscht.</div>
+    <div id="deleteTourFailed" class="alert alert-info hidden">Fahrt konnte nicht gelöscht werden.</div>
+    <h1>Fahrten verwalten</h1>
+    <div class="col-md-12">
+        <table class="table table-hover manage_tours">
+            <tr>
+                <th>Fahrt ID</th>
+                <th>Start</th>
+                <th>Ziel</th>
+                <th>Durchführungen</th>
+                <th>Fahrt und alle dazugehörigen Durchführungen löschen</th>
+            </tr>
+            {% for tour in tours %}
+                <tr class="tour" tour_id="{{ tour.id }}">
+                    <td>{{ tour.id }}</td>
+                    <td>{{ tour.start }}</td>
+                    <td>{{ tour.end }}</td>
+                    <td>
+                        Nächste Durchführung:
+                        {% with next_trip=tours.filter_by(id=tour.id).first().trips.first() %}
+                        {{ next_trip.date }}
+                        {{ next_trip.time }}<br/>
+                            {% with trip_count=tours.filter_by(id=tour.id).first().trips.count() %}
+                                {% if trip_count > 1 %}
+                                    <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                                {% endif %}
+                            {% endwith%}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <button class="delete_button" tour_id="{{ tour.id }}">
+                            <img src="{{ url_for('static', filename='images/red-x.png') }}" alt="Delete Crew" class="red-x">
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
     </div>
 {% endblock %}

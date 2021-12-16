@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, jsonify, make_response
+from flask import render_template, flash, redirect, url_for, jsonify, make_response, request
 from app import app, db
 from app.forms import LoginForm, RegisterNewUserForm, AddTourForm
 from flask_login import current_user, login_user, logout_user, login_required
@@ -158,8 +158,33 @@ def add_tour():
     get_train_choices(form)
     if form.validate_on_submit():
         tour = Tour()
+        route = form.route_choice.data.split("-")
+        tour.start = route[0]
+        tour.end = route[1]
+        tour.rushHourMultiplicator = form.rush_hour_multiplicator.data
+        # Tour gets assigned id only after persistence
         db.session.add(tour)
         db.session.commit()
+        if request.form['options'] == 'onetime':
+            trip = Trip()
+            trip.tour_id = tour.id
+            # TODO add crew if id doesnt exist
+            trip.crew_id = form.assigned_crew.data
+            trip.date = form.date.data
+            trip.time = form.time.data
+            db.session.add(trip)
+        else:
+
+            for i in range(5):
+                trip = Trip()
+                trip.tour_id = tour.id
+                # TODO add crew if id doesnt exist
+                trip.crew_id = form.assigned_crew.data
+                trip.date = form.date.data
+                trip.time = form.time.data
+                db.session.add(trip)
+        db.session.commit()
+        flash('Fahrt erfolgreich hinzugefügt')
     return render_template('add_tour.html', form=form)
 
 
@@ -168,16 +193,32 @@ def add_tour():
 def manage_tours():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
-    return render_template('manage_tours.html')
+    tours = Tour.query.order_by(Tour.id.asc())
+    return render_template('manage_tours.html', tours=tours)
+
+
+@app.route('/manage_tours/<id>', methods=['DELETE'])
+@login_required
+def delete_tour(id):
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
+    to_be_deleted = Tour.query.filter_by(id=id).first()
+    if to_be_deleted is not None:
+        db.session.delete(to_be_deleted)
+        db.session.commit()
+        append_activity(f'Tour {to_be_deleted.id} {to_be_deleted.start}-{to_be_deleted.end} wurde gelöscht.')
+        return render_template('manage_users.html'), 200
+    else:
+        return render_template('manage_tours.html'), 500
 
 
 @app.route('/get_routes')
 def get_routes():
     routes = {
         "routes": [{
-                "start": "Linz",
-                "ende": "Wien"
-            },
+            "start": "Linz",
+            "ende": "Wien"
+        },
             {
                 "start": "Salzburg",
                 "ende": "Innsbruck"
@@ -191,9 +232,9 @@ def get_routes():
 def get_trains():
     trains = {
         "trains": [{
-                "model": "ICE",
-                "modelNr": "391"
-            },
+            "model": "ICE",
+            "modelNr": "391"
+        },
             {
                 "model": "REX",
                 "modelNr": "981"
