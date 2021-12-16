@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
@@ -21,7 +21,6 @@
             <div class="hidden" id="interval-from">{{ wtf.form_field(form.intervalFrom) }}</div>
             <div class="hidden" id="interval-to">{{ wtf.form_field(form.intervalTo) }}</div>
             <p>{{ form.submit() }}</p>
-            <p>{{ form.errors }}</p>
         </form>
     </div>
 {% endblock %}

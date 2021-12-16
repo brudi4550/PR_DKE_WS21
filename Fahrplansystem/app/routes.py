@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, jsonify, make_response, request
 from app import app, db
-from app.forms import LoginForm, RegisterNewUserForm, AddTourForm
+from app.forms import LoginForm, RegisterNewUserForm, AddTourForm, EditEmployeeForm, EditTourForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import Activity, Employee, Tour, Trip, Interval, Crew
 from sqlalchemy import desc, asc
@@ -112,13 +112,32 @@ def delete_user(id):
         return render_template('manage_users.html'), 500
 
 
-@app.route('/employee/<id>', methods=['GET'])
+# TODO refactor this
+@app.route('/employee/<id>', methods=['GET', 'POST'])
 @login_required
 def user(id):
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
     employee = Employee.query.filter_by(id=id).first_or_404()
-    return render_template('employee.html', employee=employee)
+    form = EditEmployeeForm()
+    if request.method == 'GET':
+        form.id.data = employee.id
+        form.ssn.data = employee.ssn
+        form.first_name.data = employee.first_name
+        form.last_name.data = employee.last_name
+        form.employee_type.data = employee.employee_type
+    if form.validate_on_submit():
+        employee.id = form.id.data
+        employee.ssn = form.ssn.data
+        employee.first_name = form.first_name.data
+        employee.last_name = form.last_name.data
+        employee.employee_type = form.employee_type.data
+        if form.password.data != '' and form.password2.data != '':
+            employee.set_password(form.password.data)
+        db.session.commit()
+        flash('Mitarbeiter aktualisiert.')
+        return redirect(url_for('manage_users'))
+    return render_template('employee.html', form=form)
 
 
 @app.route('/manage_crews', methods=['GET'])
@@ -174,7 +193,7 @@ def add_tour():
             trip.time = form.time.data
             db.session.add(trip)
         else:
-
+            # TODO implement add according to intervall
             for i in range(5):
                 trip = Trip()
                 trip.tour_id = tour.id
@@ -210,6 +229,24 @@ def delete_tour(id):
         return render_template('manage_users.html'), 200
     else:
         return render_template('manage_tours.html'), 500
+
+
+# TODO implement edit tour
+@app.route('/manage_tours/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_tour(id):
+    if current_user.employee_type != 'admin':
+        redirect(url_for('home'))
+    tour = Tour.query.filter_by(id=id).first()
+    form = EditTourForm()
+    get_route_choices(form)
+    get_train_choices(form)
+    if request.method == 'GET':
+        pass
+    if form.validate_on_submit():
+        flash('Fahrt aktualisiert.')
+        return redirect(url_for('manage_tours'))
+    return render_template('tour.html', form=form, tour=tour)
 
 
 @app.route('/get_routes')
