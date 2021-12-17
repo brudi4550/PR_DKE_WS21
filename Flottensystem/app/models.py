@@ -63,3 +63,32 @@ class Administrator(Mitarbeiter):
         return '<Administrator {} {}>'.format(self.vorname, self.nachname)
         
 configure_mappers()
+
+
+class Wagen(db.Model, AbstractConcreteBase):
+    nr = db.Column(db.Integer, primary_key=True)
+    spurweite = db.Column(db.Integer, index=True, nullable=False)
+
+    def __repr__(self):
+        return '<Wagen-Nr.: {}>'.format(self.nr)
+        
+class Triebwagen(Wagen):
+    __tablename__ = 'triebwagen'
+    maxZugkraft = db.Column(db.Integer, nullable=False)
+    
+    __mapper_args__ = { 'polymorphic_identity':'triebwagen', 'concrete':True}
+    
+    def __repr__(self):
+        return '<Wagen-Nr.: {}>'.format(self.nr)
+        
+class Personenwagen(Wagen):
+    __tablename__ = 'personenwagen'
+    sitzanzahl = db.Column(db.Integer, nullable=False)
+    maximalgewicht = db.Column(db.Integer, nullable=False)
+    
+    __mapper_args__ = { 'polymorphic_identity':'personenwagen', 'concrete':True}
+    
+    def __repr__(self):
+        return '<Wagen-Nr.: {}>'.format(self.nr)
+        
+configure_mappers()

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 from app.models import Mitarbeiter
 
@@ -48,7 +48,7 @@ class RegistrationFormZugpersonal(FlaskForm):
     svnr = StringField('Sozialversicherungsnummer', validators=[DataRequired(), Length(min=10, max=10)])
     vorname = StringField('Vorname', validators=[DataRequired()])
     nachname = StringField('Nachname', validators=[DataRequired()])
-    berufsbezeichnung = StringField('Berufsbezeichnung', validators=[DataRequired()])
+    berufsbezeichnung = SelectField('Berufsbezeichnung', choices=[('Triebfahrzeugführer', 'Triebfahrzeugführer'), ('Triebfahrzeugbeleiter', 'Triebfahrzeugbegleiter'), ('Zugführer', 'Zugführer'), ('Zugschaffner', 'Zugschaffner'), ('Zugbegleiter', 'Zugbegleiter')], validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     passwort = PasswordField('Passwort', validators=[DataRequired(), Length(min=4)])
     passwort2 = PasswordField(
@@ -124,7 +124,7 @@ class EditProfileFormZugpersonal(FlaskForm):
     svnr = StringField('Sozialversicherungsnummer', validators=[DataRequired(), Length(min=10, max=10)])
     vorname = StringField('Vorname', validators=[DataRequired()])
     nachname = StringField('Nachname', validators=[DataRequired()])
-    berufsbezeichnung = StringField('Berufsbezeichnung', validators=[DataRequired()])
+    berufsbezeichnung = SelectField('Berufsbezeichnung', choices=[('Triebfahrzeugführer', 'Triebfahrzeugführer'), ('Triebfahrzeugbeleiter', 'Triebfahrzeugbegleiter'), ('Zugführer', 'Zugführer'), ('Zugschaffner', 'Zugschaffner'), ('Zugbegleiter', 'Zugbegleiter')], validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Bestätigen')
 
