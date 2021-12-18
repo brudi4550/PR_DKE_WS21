@@ -3,8 +3,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, EditProfileFormZugpersonal
-from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator
+from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm
+from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator, Wagen, Triebwagen, Personenwagen
 
 
 @app.route('/')
@@ -91,7 +91,7 @@ def registerUser(name):
             user = Administrator(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data)
         elif name == 'Wartungspersonal':
             user = Wartungspersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data)
-        if name == 'Zugpersonal':
+        elif name == 'Zugpersonal':
             user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data)
         user.set_password(form.passwort.data)
         db.session.add(user)
@@ -211,3 +211,34 @@ def profile():
         return render_template('profile.html', form=form, form2=form2, typ=typ)
     else:
         return render_template('profile.html', typ=typ)
+
+
+@app.route('/Wagen_erstellen')
+@login_required
+def waggon():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen neuen Waggon erstellen zu können!')
+        return redirect(url_for('home_personal'))
+    return render_template('wagen.html', title='Wagen erstellen')
+
+
+@app.route('/Wagen_erstellen/<typ>', methods=['GET', 'POST'])
+@login_required
+def createWaggon(typ):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen neuen Waggon erstellen zu können!')
+        return redirect(url_for('home_personal'))
+    if typ == 'Triebwagen':
+        form = TriebwagenForm()
+    else:
+        form = PersonenwagenForm()
+    if form.validate_on_submit():
+        if typ == 'Triebwagen':
+            wagen = Triebwagen(nr=form.nr.data, spurweite=form.spurweite.data, maxZugkraft=form.maxZugkraft.data)
+        elif typ == 'Personenwagen':
+            wagen = Personenwagen(nr=form.nr.data, spurweite=form.spurweite.data, sitzanzahl=form.sitzanzahl.data, maximalgewicht=form.maximalgewicht.data)
+        db.session.add(wagen)
+        db.session.commit()
+        flash(typ + ' wurde erfolgreich erstellt!')
+        return redirect(url_for('waggon'))
+    return render_template('create_waggon.html', title=typ + ' erstellen', form=form, typ=typ)

@@ -2,7 +2,7 @@
 
 {% block app_content %}
     <h4>Hallo, {{ current_user.vorname }}! Wählen Sie eine Option aus:</h4>
-    <a href="">Neue Waggons erstellen</a><br>
+    <a href="{{ url_for('waggon') }}">Neue Waggons erstellen</a><br>
     <a href="">Bestehende Waggons kombinieren</a><br>
     <a href="">Bestehende Züge bearbeiten</a><br>
     <a href="">Bestehende Waggons bearbeiten</a><br>
