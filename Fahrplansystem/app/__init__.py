@@ -1,13 +1,21 @@
-from flask import Flask
+from flask import Flask, url_for, redirect
 from app.config import Config
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 import logging
 from logging.handlers import RotatingFileHandler
 import os
 from flask_bootstrap import Bootstrap
+
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if current_user.employee_type == 'admin': 
+            return func(*args, **kwargs)
+        return redirect(url_for('home'))
+    return decorated_view
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -26,7 +34,6 @@ bootstrap = Bootstrap(app)
 login.login_view = 'login'
 
 from app import routes, models, errors
-
 
 if not app.debug:
     if not os.path.exists('logs'):
