@@ -7,7 +7,6 @@ from sqlalchemy import desc, asc
 import requests
 import json
 
-
 def append_activity(message):
     new_activity = Activity()
     new_activity.msg = message
@@ -17,11 +16,10 @@ def append_activity(message):
     db.session.add(new_activity)
     db.session.commit()
 
-
 @app.route('/home', methods=['GET'])
 @login_required
 def home():
-    return render_template('home.html', recent_activity=Activity.query.order_by(desc(Activity.time)).all())
+    return render_template('general/home.html', recent_activity=Activity.query.order_by(desc(Activity.time)).all())
 
 
 @app.route('/', methods=['GET'])
@@ -51,7 +49,7 @@ def login():
         append_activity(f'Mitarbeiter {employee.first_name} {employee.last_name} hat sich eingeloggt.')
         login_user(employee, remember=form.remember_me.data)
         return redirect(url_for('home'))
-    return render_template('login.html', title='Einloggen', form=form)
+    return render_template('general/login.html', title='Einloggen', form=form)
 
 
 @app.route('/logout')
@@ -64,8 +62,6 @@ def logout():
 @app.route('/register_new_user', methods=['GET', 'POST'])
 @login_required
 def register_new_user():
-    if current_user.employee_type != 'admin':
-        redirect(url_for('home'))
     form = RegisterNewUserForm()
     if form.validate_on_submit():
         e = Employee(id=form.id.data,
@@ -85,7 +81,7 @@ def register_new_user():
         append_activity(f'Mitarbeiter {e.first_name} {e.last_name} hinzugefügt.')
         flash('Benutzer erfolgreich hinzugefügt.')
         return redirect(url_for('home'))
-    return render_template('register_new_user.html', form=form)
+    return render_template('employee/register_new_employee.html', form=form)
 
 
 @app.route('/manage_users', methods=['GET'])
@@ -94,7 +90,7 @@ def manage_users():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
     employees = Employee.query.order_by(Employee.id.asc())
-    return render_template('manage_users.html', employees=employees)
+    return render_template('employee/manage_employees.html', employees=employees)
 
 
 @app.route('/manage_users/<id>', methods=['DELETE'])
@@ -107,9 +103,9 @@ def delete_user(id):
         append_activity(f'Mitarbeiter {to_be_deleted.first_name} {to_be_deleted.last_name} wurde gelöscht.')
         db.session.delete(to_be_deleted)
         db.session.commit()
-        return render_template('manage_users.html'), 200
+        return render_template('employee/manage_employees.html'), 200
     else:
-        return render_template('manage_users.html'), 500
+        return render_template('emplyee/manage_employees.html'), 500
 
 
 # TODO refactor this
@@ -137,7 +133,7 @@ def user(id):
         db.session.commit()
         flash('Mitarbeiter aktualisiert.')
         return redirect(url_for('manage_users'))
-    return render_template('employee.html', form=form)
+    return render_template('employee/employee.html', form=form)
 
 
 @app.route('/manage_crews', methods=['GET'])
@@ -146,7 +142,7 @@ def manage_crews():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
     crews = Crew.query.order_by(Crew.id.asc())
-    return render_template('manage_crews.html', crews=crews)
+    return render_template('crew/manage_crews.html', crews=crews)
 
 
 def get_route_choices(form):
@@ -204,7 +200,7 @@ def add_tour():
                 db.session.add(trip)
         db.session.commit()
         flash('Fahrt erfolgreich hinzugefügt')
-    return render_template('add_tour.html', form=form)
+    return render_template('tour/add_tour.html', form=form)
 
 
 @app.route('/manage_tours')
@@ -213,7 +209,7 @@ def manage_tours():
     if current_user.employee_type != 'admin':
         redirect(url_for('home'))
     tours = Tour.query.order_by(Tour.id.asc())
-    return render_template('manage_tours.html', tours=tours)
+    return render_template('tour/manage_tours.html', tours=tours)
 
 
 @app.route('/manage_tours/<id>', methods=['DELETE'])
@@ -226,9 +222,9 @@ def delete_tour(id):
         db.session.delete(to_be_deleted)
         db.session.commit()
         append_activity(f'Tour {to_be_deleted.id} {to_be_deleted.start}-{to_be_deleted.end} wurde gelöscht.')
-        return render_template('manage_users.html'), 200
+        return render_template('tour/manage_tour.html'), 200
     else:
-        return render_template('manage_tours.html'), 500
+        return render_template('tour/manage_tours.html'), 500
 
 
 # TODO implement edit tour
@@ -246,7 +242,7 @@ def edit_tour(id):
     if form.validate_on_submit():
         flash('Fahrt aktualisiert.')
         return redirect(url_for('manage_tours'))
-    return render_template('tour.html', form=form, tour=tour)
+    return render_template('tour/tour.html', form=form, tour=tour)
 
 
 @app.route('/get_routes')
