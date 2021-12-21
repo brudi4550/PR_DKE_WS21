@@ -4,12 +4,14 @@
 {% block app_content %}
     <div id="deleteTourFailed" class="alert alert-info hidden">Fahrt konnte nicht gelöscht werden.</div>
     <h1>Fahrten verwalten</h1>
-    <div class="col-md-10">
+    <div class="col-md-12">
         <table class="table table-hover manage_tours">
             <tr>
                 <th>Fahrt ID</th>
                 <th>Start</th>
                 <th>Ziel</th>
+                <th>Zug</th>
+                <th>Stoßzeitmultiplikator</th>
                 <th>Durchführungen</th>
                 <th class="text-center">Fahrt bearbeiten</th>
                 <th class="text-center">Fahrt und alle dazugehörigen<br/>Durchführungen löschen</th>
@@ -19,9 +21,12 @@
                     <td>{{ tour.id }}</td>
                     <td>{{ tour.start }}</td>
                     <td>{{ tour.end }}</td>
+                    <td>{{ tour.train }}</td>
+                    <td>{{ tour.rushHourMultiplicator}}x</td>
                     <td>
-                        Nächste Durchführung:
                         {% with next_trip=tours.filter_by(id=tour.id).first().trips.first() %}
+                        {% if next_trip %}
+                        Nächste Durchführung:
                         {{ next_trip.date.day }}.{{ next_trip.date.month }}.{{ next_trip.date.year }}
                         {{ next_trip.time.hour }}:{{ next_trip.time.minute }}<br/>
                             {% with trip_count=tours.filter_by(id=tour.id).first().trips.count() %}
@@ -29,6 +34,9 @@
                                     <p>{{ trip_count-1 }} weitere Durchführungen</p>
                                 {% endif %}
                             {% endwith%}
+                        {% else %}
+                            <p>Keine Durchführungen eingetragen</p>
+                        {% endif %}
                         {% endwith %}
                     </td>
                     <td class="text-center">

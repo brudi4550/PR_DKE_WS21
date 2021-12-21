@@ -60,17 +60,14 @@ class EditEmployeeForm(FlaskForm):
     submit = SubmitField('Benutzer speichern')
 
 
-class AddTourForm(FlaskForm):
+class TourForm(FlaskForm):
     route_choice = SelectField('Strecke auswählen', validators=[DataRequired()])
     train_choice = SelectField('Zug auswählen', validators=[DataRequired()])
-    date = DateField('Datum der ersten Durchführung', validators=[DataRequired()])
-    time = TimeField('Zeitpunkt der ersten Durchführung', validators=[DataRequired()])
     rush_hour_multiplicator = DecimalField('Stoßzeit-Multiplikator', validators=[DataRequired()])
-    assigned_crew = IntegerField('Bordpersonalteam zuteilen', validators=[DataRequired()])
-    interval = IntegerField('Im Intervall von (Minuten):', default=0)
-    intervalFrom = IntegerField('Von Uhrzeit:', default=0)
-    intervalTo = IntegerField('Bis Uhrzeit:', default=0)
-    submit = SubmitField('Fahrt zum System hinzufügen')
+    # interval = IntegerField('Im Intervall von (Minuten):', default=0)
+    # intervalFrom = IntegerField('Von Uhrzeit:', default=0)
+    # intervalTo = IntegerField('Bis Uhrzeit:', default=0)
+    submit = SubmitField()
 
 
 class EditTourForm(FlaskForm):
