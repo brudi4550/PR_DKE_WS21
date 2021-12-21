@@ -2,19 +2,20 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div id="deleteCrewSucceeded" class="alert alert-info hidden">Bordpersonalteam wurde gelöscht.</div>
     <div id="deleteCrewFailed" class="alert alert-info hidden">Bordpersonalteam konnte nicht gelöscht werden.</div>
     <h1>Bordpersonalteams verwalten</h1>
-    <div class="col-md-12">
-        <table class="table table-hover manage_employees">
+    <div class="col-md-12 manage_crews">
+        <table class="table table-hover">
             <tr>
                 <th>Bordpersonalteam ID</th>
                 <th>Mitarbeiter in diesem Team</th>
-                <th>Bordpersonalteam löschen</th>
+                <th class="text-center">Bordpersonalteam löschen</th>
             </tr>
             {% for crew in crews %}
                 <tr class="crew" crew_id="{{ crew.id }}">
                     <td>{{ crew.id }}</td>
+                    {% with employees=crews.filter_by(id=crew.id).first().employees.all() %}
+                    {% if employees|length > 0 %}
                     <td>
                         <table class="table table-hover">
                             <tr>
@@ -24,7 +25,7 @@
                                 <th>SVN</th>
                                 <th>Funktion</th>
                             </tr>
-                            {% for employee in crews.filter_by(id=crew.id).first().employees.all() %}
+                            {% for employee in employees %}
                                 <tr>
                                     <td>{{ employee.id }}</td>
                                     <td>{{ employee.first_name }}</td>
@@ -35,13 +36,23 @@
                             {% endfor %}
                         </table>
                     </td>
+                    {% else %}
                     <td>
+                        <p>Keine Mitarbeiter in diesem Bordpersonalteam</p>
+                    </td>
+                    {% endif %}
+                    {% endwith %}
+                    <td class="text-center">
                         <button class="delete_button" crew_id="{{ crew.id }}">
-                            <img src="{{ url_for('static', filename='images/red-x.png') }}" alt="Delete Crew" class="red-x">
+                            <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
                         </button>
                     </td>
                 </tr>
             {% endfor %}
         </table>
+        <button class="btn btn-primary add_empty_crew">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Leeres Bordpersonalteam hinzufügen
+        </button>
     </div>
 {% endblock %}

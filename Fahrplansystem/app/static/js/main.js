@@ -22,15 +22,14 @@ $(document).ready(function() {
         }
         var employee_id = $(this).attr('employee_id')
         var ajaxReq = $.ajax({
-                url: '/manage_users/'+employee_id,
+                url: '/manage_employees/'+employee_id,
                 type: 'DELETE',
                 statusCode: {
                     200: function() {
-                        $("#deleteUserSucceeded").temporaryRemoveClass("hidden", 3000);
-                        $(".manage_employees tr[employee_id=" + employee_id + "]").addClass("hidden");
+                        window.location.reload()
                     },
                     500: function() {
-                        $("#deleteUserFailed").temporaryRemoveClass("hidden", 3000);
+                        $("#deleteEmployeeFailed").temporaryRemoveClass("hidden", 3000);
                     }
                 }
             });
@@ -42,17 +41,35 @@ $(document).ready(function() {
             return
         }
         var tour_id = $(this).attr('tour_id')
-        console.log('clicked delete on '+ tour_id)
         var ajaxReq = $.ajax({
                 url: '/manage_tours/'+tour_id,
                 type: 'DELETE',
                 statusCode: {
                     200: function() {
-                        $("#deleteTourSucceeded").temporaryRemoveClass("hidden", 3000);
-                        $(".manage_tours tr[tour_id=" + tour_id + "]").addClass("hidden");
+                        window.location.reload()
                     },
                     500: function() {
                         $("#deleteTourFailed").temporaryRemoveClass("hidden", 3000);
+                    }
+                }
+            });
+    });
+
+    // Delete crew on button click
+    $('.manage_crews .delete_button').click(function() {
+        if (!window.confirm("Sind Sie sich sicher?")) {
+            return
+        }
+        var tour_id = $(this).attr('crew_id')
+        var ajaxReq = $.ajax({
+                url: '/manage_crews/'+tour_id,
+                type: 'DELETE',
+                statusCode: {
+                    200: function() {
+                        window.location.reload()
+                    },
+                    500: function() {
+                        $("#deleteCrewFailed").temporaryRemoveClass("hidden", 3000);
                     }
                 }
             });
@@ -67,7 +84,7 @@ $(document).ready(function() {
     //Edit a tour
     $('.manage_tours .edit_button').click(function() {
         var tour_id = $(this).attr('tour_id');
-        window.location = '/manage_tours/' + tour_id;
+        window.location = '/tour/' + tour_id;
     });
 
     //show interval fields on choice repeat
@@ -83,4 +100,14 @@ $(document).ready(function() {
             $('#interval').addClass('hidden');
         }
     });
+
+    // Add empty crew
+    $('.manage_crews .add_empty_crew').click(function() {
+        var ajaxReq = $.ajax({
+                url: '/add_empty_crew',
+                type: 'POST'
+            });
+        window.location.reload()
+    });
+
 });

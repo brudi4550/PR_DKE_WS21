@@ -79,7 +79,7 @@ class Tour(db.Model):
     end = db.Column(db.String(64), nullable=False)
     interval = db.Column(db.Integer, db.ForeignKey('interval.id'))
     rushHourMultiplicator = db.Column(db.Float, nullable=False)
-    trips = db.relationship('Trip', backref='tour', lazy='dynamic')
+    trips = db.relationship('Trip', backref='tour', cascade='all,delete', lazy='dynamic')
 
 
 class Trip(db.Model):
