@@ -2,8 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div id="deleteUserSucceeded" class="alert alert-info hidden">Benutzer erfolgreich gelöscht.</div>
-    <div id="deleteUserFailed" class="alert alert-info hidden">Benutzer konnte nicht gelöscht werden.</div>
+    <div id="deleteEmployeeFailed" class="alert alert-info hidden">Benutzer konnte nicht gelöscht werden.</div>
     <h1>Benutzer verwalten</h1>
     <div class="col-md-10">
         <table class="table table-hover manage_employees">
@@ -14,8 +13,8 @@
                 <th>SVN</th>
                 <th>Funktion</th>
                 <th>Crew ID</th>
-                <th>Benutzer bearbeiten</th>
-                <th>Benutzer löschen</th>
+                <th class="text-center">Benutzer bearbeiten</th>
+                <th class="text-center">Benutzer löschen</th>
             </tr>
             {% for employee in employees %}
                 <tr class="employee" employee_id="{{ employee.id }}">
@@ -25,14 +24,14 @@
                     <td>{{ employee.ssn }}</td>
                     <td>{{ employee.employee_type }}</td>
                     <td>{{ employee.crew_id }}</td>
-                    <td>
+                    <td class="text-center">
                         <button class="edit_button" employee_id="{{ employee.id }}">
                             <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                         </button>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <button class="delete_button" employee_id="{{ employee.id }}">
-                            <img src="{{ url_for('static', filename='images/red-x.png') }}" alt="Delete User" class="red-x">
+                            <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
                         </button>
                     </td>
                 </tr>

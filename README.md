@@ -13,15 +13,15 @@ Zum (erstmaligen) Starten des Systems:
 Bei weiteren Starts muss nur mehr run.sh ausgeführt werden.
 Falls sich Dependencies ändern, kann install.sh erneut ausgeführt werden.
 
-Bei keinen Argumenten versucht run.sh alle Systeme zu starten.<br>
+Bei keinen Parametern versucht run.sh alle Systeme zu starten.<br>
 Es können auch die Systeme angegeben werden, die gestartet werden sollen.<br>
-Reihenfolge der Argumente spielt keine Rolle.<br>
-Argumente:<br>
+Reihenfolge der Parameter spielt keine Rolle.<br>
+Parameter:<br>
 fa (Fahrplansystem)<br>
 fl (Flottensystem)<br>
 st (Streckensystem)<br>
 ti (Ticketsystem)<br>
-q  (quiet - Keine Flask error messages anzeigen)<br>
+q  (quiet - Keine Flask Informationen anzeigen)<br>
 
 Also z.B. <br>
 ./run.sh fa q<br>

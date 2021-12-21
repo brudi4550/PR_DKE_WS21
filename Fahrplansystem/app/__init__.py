@@ -1,4 +1,5 @@
-from flask import Flask, url_for, redirect
+from functools import wraps
+from flask import Flask, url_for, redirect, request, render_template
 from app.config import Config
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
@@ -8,14 +9,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from flask_bootstrap import Bootstrap
-
-def admin_required(func):
-    @wraps(func)
-    def decorated_view(*args, **kwargs):
-        if current_user.employee_type == 'admin': 
-            return func(*args, **kwargs)
-        return redirect(url_for('home'))
-    return decorated_view
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -33,7 +26,27 @@ login = LoginManager(app)
 bootstrap = Bootstrap(app)
 login.login_view = 'login'
 
-from app import routes, models, errors
+
+from app.routes.general import append_activity
+
+
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if current_user.employee_type == 'admin':
+            return func(*args, **kwargs)
+        url = request.path
+        method = request.method
+        employee_id = current_user.id
+        fn = current_user.first_name
+        ln = current_user.last_name
+        append_activity(f'Mitarbeiter {fn} {ln} (ID:{employee_id}) hat versucht {url} aufzurufen, Method:{method}')
+        return render_template('errors/404.html', url=url), 404
+    return decorated_view
+
+
+from app import models, errors
+from app.routes import general, employee, crew, tour, api
 
 if not app.debug:
     if not os.path.exists('logs'):
