@@ -4,23 +4,6 @@
 {% block app_content %}
     <h1>Fahrt hinzufügen</h1>
     <div class="col-md-6">
-        <form action="" method="post" novalidate id="add-tour">
-            {{ form.hidden_tag() }}
-            <p>{{ wtf.form_field(form.route_choice) }}</p>
-            <p>{{ wtf.form_field(form.train_choice) }}</p>
-            <p>{{ wtf.form_field(form.date) }}</p>
-            <p>{{ wtf.form_field(form.time) }}</p>
-            <p>{{ wtf.form_field(form.rush_hour_multiplicator) }}</p>
-            <p>{{ wtf.form_field(form.assigned_crew) }}</p>
-            <div class="repeat-tour-radio-buttons">
-              <input type="radio" name="options" value="onetime" /> Einmalig <br />
-              <input type="radio" name="options" value="repeat" /> Wiederholen <br />
-            </div>
-            <br/>
-            <div class="hidden" id="interval">{{ wtf.form_field(form.interval) }}</div>
-            <div class="hidden" id="interval-from">{{ wtf.form_field(form.intervalFrom) }}</div>
-            <div class="hidden" id="interval-to">{{ wtf.form_field(form.intervalTo) }}</div>
-            <p>{{ form.submit() }}</p>
-        </form>
+        {{ wtf.quick_form(form) }}
     </div>
 {% endblock %}
