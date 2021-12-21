@@ -1,5 +1,5 @@
 # PR_DKE_WS21
-Implementierung von Informationssystemen in einem Bahnunternehmen.
+Implementierung von Informationssystemen in einem Bahnunternehmen.<br>
 
 Verantwortlicher Fahrplansystem: Alexander Wolf<br>
 Verantwortlicher Flottensystem: Anil Yildiz<br>
@@ -27,3 +27,7 @@ Also z.B. <br>
 ./run.sh fa q<br>
 oder<br>
 ./run.sh st ti fl <br>
+
+<br>
+Technologie-Stack:
+Flask, Python, Jinja, SQLite
