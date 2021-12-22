@@ -87,6 +87,18 @@ $(document).ready(function() {
         window.location = '/tour/' + tour_id;
     });
 
+   //Edit trips of a tour
+    $('.manage_tours .manage_trips_button').click(function() {
+        var tour_id = $(this).attr('tour_id');
+        window.location = '/trips/' + tour_id;
+    });
+
+    //Edit a single trip
+    $('.single_trips .edit_trip_button').click(function() {
+        var trip_id = $(this).attr('trip_id');
+        window.location = '/edit_trip/' + trip_id;
+    });
+
     //show interval fields on choice repeat
     $('.repeat-tour-radio-buttons').click(function() {
         option = $('input[name=options]:checked', '#add-tour').val()

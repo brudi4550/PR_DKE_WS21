@@ -12,7 +12,9 @@
                 <th>Ziel</th>
                 <th>Zug</th>
                 <th>Stoßzeitmultiplikator</th>
-                <th>Durchführungen</th>
+                <th>
+                    Durchführungen
+                </th>
                 <th class="text-center">Fahrt bearbeiten</th>
                 <th class="text-center">Fahrt und alle dazugehörigen<br/>Durchführungen löschen</th>
             </tr>
@@ -38,6 +40,9 @@
                             <p>Keine Durchführungen eingetragen</p>
                         {% endif %}
                         {% endwith %}
+                        <button class="manage_trips_button" tour_id="{{ tour.id }}">
+                            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                        </button>
                     </td>
                     <td class="text-center">
                         <button class="edit_button" tour_id="{{ tour.id }}">
