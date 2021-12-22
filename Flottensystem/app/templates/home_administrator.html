@@ -3,9 +3,9 @@
 {% block app_content %}
     <h4>Hallo, {{ current_user.vorname }}! Wählen Sie eine Option aus:</h4>
     <a href="{{ url_for('waggon') }}">Neue Waggons erstellen</a><br>
+    <a href="{{ url_for('updateWaggon') }}">Bestehende Waggons bearbeiten/löschen</a><br>
     <a href="">Bestehende Waggons kombinieren</a><br>
     <a href="">Bestehende Züge bearbeiten</a><br>
-    <a href="">Bestehende Waggons bearbeiten</a><br>
     <a href="{{ url_for('register') }}">Neuen Benutzer erstellen</a><br>
     <a href="{{ url_for('updateUser') }}">Bestehende Benutzer bearbeiten/löschen</a><br>
     <a href="">Neue Wartung hinzufügen</a><br>

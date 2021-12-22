@@ -3,14 +3,14 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm
+from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm, EditTriebwagenForm, EditPersonenwagenForm
 from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator, Wagen, Triebwagen, Personenwagen
 
 
 @app.route('/')
 @app.route('/Startseite')
 def home():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated:   # Falls der Benutzer schon angemeldet ist, wird dieser in die jeweilige Seite weitergeleitet
         if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
             next_page = url_for('home_admin')
         else:
@@ -22,8 +22,8 @@ def home():
 @app.route('/Startseite/Admin')
 @login_required
 def home_admin():
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
-        flash('Sie müssen als Administrator angemeldet sein, um in die Administrator-Startseite zu gelangen!')
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Hier wird kontrolliert, ob der angemeldete Benutzer kein Administrator ist. Ist dies der Fall, wird dieser in die Personalseite weitergeleitet (wo man auch keine Administratorrechte hat)
+        flash('Sie müssen als Administrator angemeldet sein, um in die Administrator-Startseite zu gelangen!')  # Anschließend wird diese Meldung mitgegeben, um den Benutzer darüber zu informieren, warum dieser nicht auf diese Webseite zugreifen kann
         return redirect(url_for('home_personal'))
     return render_template('home_administrator.html', title='Startseite - Flotteninformationssystem')
 
@@ -31,7 +31,7 @@ def home_admin():
 @app.route('/Startseite/Personal')
 @login_required
 def home_personal():
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None: # Falls es sich beim angemeldet User um einen Administrator handelt, wird dieser in die Administrator-Startseite weitergeleitet
         flash('Sie sind als Administrator angemeldet!')
         return redirect(url_for('home_admin'))
     return render_template('home_personal.html', title='Startseite - Flotteninformationssystem')
@@ -39,19 +39,19 @@ def home_personal():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated:   # Ist der Nutzer schon angemeldet, dann hat dieser keinen Zugriff auf die Login-Webseite und wird entsprechend weitergeleitet
         if Administrator.query.filter(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
             return redirect(url_for('home_admin'))
         else:
             return redirect(url_for('home_personal'))
     form = LoginForm()
-    if form.validate_on_submit():
-        user = Mitarbeiter.query.filter_by(email=form.email.data).first()
-        if user is None or not user.check_password(form.passwort.data):
+    if form.validate_on_submit():   # Drückt man beim Login auf den Submit-Button, dann ist diese Bedingung True
+        user = Mitarbeiter.query.filter_by(email=form.email.data).first()   # Es wird über die gesamte Mitarbeitertabelle hinweg die eingegebene Email Adresse gesucht
+        if user is None or not user.check_password(form.passwort.data): # Falls kein User unter der angegebenen Email Adresse gefunden wurde oder das Passwort vom User falsch eingegeben wurde, dann wird die folgende Fehlermeldung ausgegeben und der Benutzer muss sich nochmal anmelden
             flash('Email bzw. Passwort ungültig!')
             return redirect(url_for('login'))
-        login_user(user, remember=form.angemeldet_bleiben.data)
-        next_page = request.args.get('next')
+        login_user(user, remember=form.angemeldet_bleiben.data) # Das Login wird durchgeführt und es wird sich auch gemerkt, ob die Checkbox "angemeldet_bleiben" angekreuzt worden ist
+        next_page = request.args.get('next')    # Wurde ein Benutzer von einer anderen Seite in das Login weitergeleitet, so wird diese vorherige Seite (auf die man zugreifen wollte) in next_page gespeichert
         if not next_page or url_parse(next_page).netloc != '':
             if Administrator.query.filter_by(mitarbeiterNr=user.mitarbeiterNr).first() is not None:
                 next_page = url_for('home_admin')
@@ -63,14 +63,14 @@ def login():
     
 @app.route('/logout')
 def logout():
-    logout_user()
+    logout_user()   # Hier wird der User ausgeloggt und in die Startseite weitergeleitet
     return redirect(url_for('home'))
 
 
 @app.route('/register')
 @login_required
 def register():
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Hier wird überprüft, ob ein Administrator auf diese Webseite zugreift. ist dies nicht der Fall, wird der User in die Personal-Startseite weitergeleitet
         flash('Sie müssen als Administrator angemeldet sein, um einen neuen Benutzer erstellen zu können!')
         return redirect(url_for('home_personal'))
     return render_template('register.html', title='Benutzer erstellen')
@@ -79,12 +79,12 @@ def register():
 @app.route('/registerUser/<name>', methods=['GET', 'POST'])
 @login_required
 def registerUser(name):
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Hier wird überprüft, ob ein Administrator auf diese Webseite zugreift. ist dies nicht der Fall, wird der User in die Personal-Startseite weitergeleitet
         flash('Sie müssen als Administrator angemeldet sein, um einen neuen Benutzer erstellen zu können!')
         return redirect(url_for('home_personal'))
-    if name == 'Zugpersonal':
+    if name == 'Zugpersonal':   # Es wird überprüft, ob im übergebenen Parameter 'name' 'Zugpersonal' eingetragen ist. Ist dies der Fall wird ein Formular für das Zugpersonal verwendet der eine kleine Abweichung im Unterschied zu den anderen Mitarbeitern enthält
         form = RegistrationFormZugpersonal()
-    else:
+    else:   # Ist im Parameter 'name' nicht 'Zugpersonal' eingetragen, so wird das andere Formular für die Registrierung eines Users verwendet
     	form = RegistrationForm()
     if form.validate_on_submit():
         if name == 'Administrator':
@@ -95,7 +95,7 @@ def registerUser(name):
             user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data)
         user.set_password(form.passwort.data)
         db.session.add(user)
-        db.session.commit()
+        db.session.commit() # Hier werden die Daten persistiert
         flash('Benutzer wurde erfolgreich erstellt!')
         return redirect(url_for('register'))
     return render_template('register_user.html', title=name + ' erstellen', form=form, typ=name)
@@ -104,26 +104,26 @@ def registerUser(name):
 @app.route('/User_bearbeiten')
 @login_required
 def updateUser():
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Auch hier werden User, die nicht Administrator sind, in die Personal-Startseite weitergeleitet
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer bearbeiten zu können!')
         return redirect(url_for('home_personal'))
     wartungspersonal = Wartungspersonal.query.all()
     zugpersonal = Zugpersonal.query.all()
     form = EmptyForm()
-    return render_template('user.html', wartungspersonal=wartungspersonal, zugpersonal=zugpersonal, form=form)
+    return render_template('user.html', wartungspersonal=wartungspersonal, zugpersonal=zugpersonal, form=form)  # Wartungs- und Zugpersonal werden auch übergeben, um diese nachfolgend auf der Webseite darzustellen
     
     
 @app.route('/User_bearbeiten/<mitarbeiterNr>', methods=['GET', 'POST'])
 @login_required
 def editUser(mitarbeiterNr):
-    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Auch hier werden User, die nicht Administrator sind, in die Personal-Startseite weitergeleitet
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer bearbeiten zu können!')
         return redirect(url_for('home_personal'))
     user = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
-    if user is None:
+    if user is None:    # Wird unter der übergebenen Mitarbeiternummer kein User gefunden, so wird der Benutzer darüber informiert
         flash('Es wurde kein Mitarbeiter unter der Mitarbeiternummer {} gefunden!'.format(mitarbeiterNr))
         return redirect(url_for('updateUser'))
-    elif type(user) == Administrator and user.mitarbeiterNr != current_user.mitarbeiterNr:
+    elif type(user) == Administrator and user.mitarbeiterNr != current_user.mitarbeiterNr:  # Hier wird verhindert, dass die Daten eines anderen Administrators geändert werden
         flash('Sie dürfen die Daten eines anderen Administrators nicht bearbeiten!')
         return redirect(url_for('updateUser'))
     elif type(user) == Zugpersonal:
@@ -143,7 +143,7 @@ def editUser(mitarbeiterNr):
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateUser'))
-    elif request.method == 'GET':
+    elif request.method == 'GET':   # Ist die Abfragemethode 'GET', dann wird das Formular mit den Daten des jeweiligen Mitarbeiters angezeigt
         form.mitarbeiterNr.data = user.mitarbeiterNr
         form.svnr.data = user.svnr
         form.vorname.data = user.vorname
@@ -162,7 +162,7 @@ def deleteUser(mitarbeiterNr):
     form=EmptyForm()
     if form.validate_on_submit():
         mitarbeiter = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
-        if mitarbeiter is None:
+        if mitarbeiter is None: # Wird der Mitarbeiter nicht gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
             flash('Löschen eines nicht vorhandenen Mitarbeiters nicht möglich')
             return redirect(url_for('updateUser'))
         db.session.delete(mitarbeiter)
@@ -179,7 +179,7 @@ def deleteUser(mitarbeiterNr):
 
 @app.route('/Profil', methods=['GET', 'POST'])
 @login_required
-def profile():
+def profile():  # Bei der Änderung eines Profils wird zwischen einem Administrator und den anderen Personalarten unterschieden. Ein Administrator kann die eigenen Daten verändern, während normales Personal nur Leserechte hat
     user = Mitarbeiter.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first()
     if type(user) == Administrator:
         typ = 'Administrator'
@@ -228,7 +228,7 @@ def createWaggon(typ):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen neuen Waggon erstellen zu können!')
         return redirect(url_for('home_personal'))
-    if typ == 'Triebwagen':
+    if typ == 'Triebwagen': # Für die unterschiedlichen Typen des Waggons werden unterschiedliche Formulare verwendet
         form = TriebwagenForm()
     else:
         form = PersonenwagenForm()
@@ -242,3 +242,70 @@ def createWaggon(typ):
         flash(typ + ' wurde erfolgreich erstellt!')
         return redirect(url_for('waggon'))
     return render_template('create_waggon.html', title=typ + ' erstellen', form=form, typ=typ)
+
+@app.route('/Wagen_bearbeiten')
+@login_required
+def updateWaggon():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen Waggon bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    triebwagen = Triebwagen.query.all()
+    personenwagen = Personenwagen.query.all()
+    form = EmptyForm()
+    return render_template('edit_wagen_overview.html', triebwagen=triebwagen, personenwagen=personenwagen, form=form)
+
+@app.route('/Wagen_bearbeiten/<nr>', methods=['GET', 'POST'])
+@login_required
+def editWaggon(nr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Auch hier werden User, die nicht Administrator sind, in die Personal-Startseite weitergeleitet
+        flash('Sie müssen als Administrator angemeldet sein, um einen bestehenden Waggon bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    wagen = Wagen.query.filter_by(nr=nr).first()
+    if wagen is None:    # Wird unter der übergebenen Wagennummer kein Waggon gefunden, so wird der Benutzer darüber informiert
+        flash('Es wurde kein Waggon unter der Wagennummer {} gefunden!'.format(nr))
+        return redirect(url_for('updateWaggon'))
+    elif type(wagen) == Triebwagen:
+        typ = 'Triebwagen'
+        form = EditTriebwagenForm(wagen.nr)
+    else:
+        typ = 'Personenwagen'
+        form = EditPersonenwagenForm(wagen.nr)
+    if form.validate_on_submit():
+        wagen.nr = form.nr.data
+        wagen.spurweite = form.spurweite.data
+        if type(wagen) == Triebwagen:
+            wagen.maxZugkraft = form.maxZugkraft.data
+        else:
+            wagen.sitzanzahl = form.sitzanzahl.data
+            wagen.maximalgewicht = form.maximalgewicht.data
+        db.session.commit()
+        flash('Änderungen wurden erfolgreich durchgeführt!')
+        return redirect(url_for('updateWaggon'))
+    elif request.method == 'GET':   # Ist die Abfragemethode 'GET', dann wird das Formular mit den Daten des jeweiligen Waggons angezeigt
+        form.nr.data = wagen.nr
+        form.spurweite.data = wagen.spurweite
+        if type(wagen) == Triebwagen:
+            form.maxZugkraft.data = wagen.maxZugkraft
+        else:
+            form.sitzanzahl.data = wagen.sitzanzahl
+            form.maximalgewicht.data = wagen.maximalgewicht
+    return render_template('edit_wagen.html', form=form, typ=typ)
+
+@app.route('/Wagen_löschen/<nr>', methods=['POST'])
+@login_required
+def deleteWaggon(nr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen Waggon löschen zu können!')
+        return redirect(url_for('home_personal'))
+    form=EmptyForm()
+    if form.validate_on_submit():
+        wagen = Wagen.query.filter_by(nr=nr).first()
+        if wagen is None: # Wird kein Wagggon gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
+            flash('Löschen eines nicht vorhandenen Waggons nicht möglich')
+            return redirect(url_for('updateWaggon'))
+        db.session.delete(wagen)
+        db.session.commit()
+        flash('Löschen des Waggons mit der Wagennummer {} wurde erfolgreich durchgeführt'.format(nr))
+        return redirect(url_for('updateWaggon'))
+    else:
+        return redirect(url_for('updateWaggonr'))

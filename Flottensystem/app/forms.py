@@ -161,8 +161,8 @@ class EditProfileFormZugpersonal(FlaskForm):
 
 class TriebwagenForm(FlaskForm):
     nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
-    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm')], validators=[DataRequired()])
-    maxZugkraft = StringField('Maximale Zugkraft', validators=[DataRequired()])
+    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
+    maxZugkraft = StringField('Maximale Zugkraft [Tonnen]', validators=[DataRequired()])
     submit = SubmitField('Erstellen')
 
     def validate_nr(self, nr):
@@ -180,7 +180,7 @@ class TriebwagenForm(FlaskForm):
 
 class PersonenwagenForm(FlaskForm):
     nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
-    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm')], validators=[DataRequired()])
+    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
     sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=3)])
     maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired()])
     submit = SubmitField('Erstellen')
@@ -192,6 +192,60 @@ class PersonenwagenForm(FlaskForm):
         wagen = Wagen.query.filter_by(nr=nr.data).first()
         if wagen is not None:
             raise ValidationError('Diese Wagennummer ist bereits vergeben! Bitte geben sie eine andere Wagennummer ein.')
+
+    def validate_sitzanzahl(self, sitzanzahl):
+        for character in sitzanzahl.data:
+            if not character.isdigit():
+                raise ValidationError('Die Sitzanzahl darf nur aus Ziffern bestehen!')
+
+    def validate_maximalgewicht(self, maximalgewicht):
+        for character in maximalgewicht.data:
+            if not character.isdigit():
+                raise ValidationError('Das Maximalgewicht darf nur aus Ziffern bestehen!')
+
+class EditTriebwagenForm(FlaskForm):
+    nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
+    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
+    maxZugkraft = StringField('Maximale Zugkraft', validators=[DataRequired()])
+    submit = SubmitField('Erstellen')
+
+    def __init__(self, original_nr, *args, **kwargs):
+        super(EditTriebwagenForm, self).__init__(*args, **kwargs)
+        self.original_nr = original_nr
+
+    def validate_nr(self, nr):
+        for character in nr.data:
+            if not character.isdigit():
+                raise ValidationError('Die Wagennummer darf nur aus Ziffern bestehen!')
+        if int(nr.data) != self.original_nr:
+            wagen = Wagen.query.filter_by(nr=nr.data).first()
+            if wagen is not None:
+                raise ValidationError('Diese Wagennummer ist bereits vergeben! Bitte geben sie eine andere Wagennummer ein.')
+
+    def validate_maxZugkraft(self, maxZugkraft):
+        for character in maxZugkraft.data:
+            if not character.isdigit():
+                raise ValidationError('Die maximale Zugkraft darf nur aus Ziffern bestehen!')
+
+class EditPersonenwagenForm(FlaskForm):
+    nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
+    spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
+    sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=3)])
+    maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired()])
+    submit = SubmitField('Erstellen')
+
+    def __init__(self, original_nr, *args, **kwargs):
+        super(EditPersonenwagenForm, self).__init__(*args, **kwargs)
+        self.original_nr = original_nr
+
+    def validate_nr(self, nr):
+        for character in nr.data:
+            if not character.isdigit():
+                raise ValidationError('Die Wagennummer darf nur aus Ziffern bestehen!')
+        if int(nr.data) != self.original_nr:
+            wagen = Wagen.query.filter_by(nr=nr.data).first()
+            if wagen is not None:
+                raise ValidationError('Diese Wagennummer ist bereits vergeben! Bitte geben sie eine andere Wagennummer ein.')
 
     def validate_sitzanzahl(self, sitzanzahl):
         for character in sitzanzahl.data:

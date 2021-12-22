@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if triebwagen == [] and personenwagen == [] %}
+        <p>Keine Waggons zum bearbeiten verfügbar!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% endif %}
+    <table class="table table-hover">
+        <tr>
+            <th>Wagennummer</th>
+            <th>Spurweite [mm]</th>
+            <th>Wagenart</th>
+            <th>Maximale Zugkraft [Tonnen]</th>
+            <th>Sitzanzahl</th>
+            <th>Maximalgewicht [Tonnen]</th>
+            <th></th>
+            <th></th>
+        </tr>
+        {% for t in triebwagen %}
+            <tr>
+                <td>{{ t.nr }}</td>
+                <td>{{ t.spurweite }}</td>
+                <td>Triebwagen</td>
+                <td>{{ t.maxZugkraft }}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                    <a class="btn btn-default" href="{{ url_for('editWaggon', nr=t.nr) }}" role="button">Bearbeiten</a>
+                </td>
+                <td>
+                    <form action="{{ url_for('deleteWaggon', nr=t.nr) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_errors(form, hiddens="only") }}
+
+                        {{ wtf.form_field(form.submit) }}
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        {% for p in personenwagen %}
+        <tr>
+            <td>{{ p.nr }}</td>
+            <td>{{ p.spurweite }}</td>
+            <td>Personenwagen</td>
+            <td>-</td>
+            <td>{{ p.sitzanzahl }}</td>
+            <td>{{ p.maximalgewicht }}</td>
+            <td>
+                <a class="btn btn-default" href="{{ url_for('editWaggon', nr=p.nr) }}" role="button">Bearbeiten</a>
+            </td>
+            <td>
+                <form action="{{ url_for('deleteWaggon', nr=p.nr) }}" method="post">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form, hiddens="only") }}
+
+                    {{ wtf.form_field(form.submit) }}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
