@@ -71,6 +71,8 @@ class Interval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fromHour = db.Column(db.Integer)
     toHour = db.Column(db.Integer)
+    trips = db.relationship('Trip', backref='interval', cascade='all,delete', lazy='dynamic')
+    tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 
 
 class Tour(db.Model):
@@ -78,17 +80,18 @@ class Tour(db.Model):
     start = db.Column(db.String(64), nullable=False)
     end = db.Column(db.String(64), nullable=False)
     train = db.Column(db.String(64))
-    interval = db.Column(db.Integer, db.ForeignKey('interval.id'))
+    intervals = db.relationship('Interval', backref='tour', cascade='all,delete', lazy='dynamic')
     rushHourMultiplicator = db.Column(db.Float, nullable=False)
     trips = db.relationship('Trip', backref='tour', cascade='all,delete', lazy='dynamic')
 
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, index=True, default=datetime.date)
-    time = db.Column(db.Time, index=True, default=datetime.time)
+    date = db.Column(db.Date, index=True, default=datetime.today())
+    time = db.Column(db.Time, index=True, default=datetime.now().time())
     crew_id = db.Column(db.Integer, db.ForeignKey('crew.id'))
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
+    interval_id = db.Column(db.Integer, db.ForeignKey('interval.id'))
 
     def __repr__(self):
         return '<Trip {}>'.format(self.id)

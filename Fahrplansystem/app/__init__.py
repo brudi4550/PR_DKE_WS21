@@ -46,7 +46,7 @@ def admin_required(func):
 
 
 from app import models, errors
-from app.routes import general, employee, crew, tour, api
+from app.routes import general, employee, crew, tour, trip, api
 
 if not app.debug:
     if not os.path.exists('logs'):

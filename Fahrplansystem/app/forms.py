@@ -81,3 +81,10 @@ class EditTourForm(FlaskForm):
     intervalFrom = IntegerField('Von Uhrzeit:', default=0)
     intervalTo = IntegerField('Bis Uhrzeit:', default=0)
     submit = SubmitField('Fahrt zum System hinzufügen')
+
+
+class AddTripForm(FlaskForm):
+    date = DateField('Datum der Durchführung', validators=[DataRequired()])
+    time = TimeField('Zeitpunkt der Durchführung', validators=[DataRequired()])
+    assigned_crew = IntegerField('Bordpersonalteam zuteilen', validators=[DataRequired()])
+    submit = SubmitField('Einzelne Durchführung hinzufügen')
