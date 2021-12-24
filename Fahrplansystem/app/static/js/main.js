@@ -96,7 +96,8 @@ $(document).ready(function() {
     //Edit a single trip
     $('.single_trips .edit_trip_button').click(function() {
         var trip_id = $(this).attr('trip_id');
-        window.location = '/edit_trip/' + trip_id;
+        var tour_id = $(this).attr('tour_id');
+        window.location = '/edit_single_trip/' + tour_id + "/" + trip_id;
     });
 
     //show interval fields on choice repeat

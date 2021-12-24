@@ -69,8 +69,9 @@ class Crew(db.Model):
 
 class Interval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fromHour = db.Column(db.Integer)
-    toHour = db.Column(db.Integer)
+    start_time = db.Column(db.Time, index=True, default=datetime.now().time())
+    end_time = db.Column(db.Time, index=True, default=datetime.now().time())
+    interval_minutes = db.Column(db.Integer)
     trips = db.relationship('Trip', backref='interval', cascade='all,delete', lazy='dynamic')
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 

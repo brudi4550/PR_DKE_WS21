@@ -83,8 +83,16 @@ class EditTourForm(FlaskForm):
     submit = SubmitField('Fahrt zum System hinzufügen')
 
 
-class AddTripForm(FlaskForm):
+class SingleTripForm(FlaskForm):
     date = DateField('Datum der Durchführung', validators=[DataRequired()])
     time = TimeField('Zeitpunkt der Durchführung', validators=[DataRequired()])
     assigned_crew = IntegerField('Bordpersonalteam zuteilen', validators=[DataRequired()])
     submit = SubmitField('Einzelne Durchführung hinzufügen')
+
+
+class IntervalTripForm(FlaskForm):
+    start_date = DateField('Start des Intervalls', validators=[DataRequired()])
+    start_time = TimeField('Zwischen', validators=[DataRequired()])
+    end_time = TimeField('Und', validators=[DataRequired()])
+    interval = IntegerField('Im Intervall von: (in Minuten)', validators=[DataRequired()])
+    submit = SubmitField('Intervall Durchführung hinzufügen')
