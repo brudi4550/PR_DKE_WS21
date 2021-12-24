@@ -49,7 +49,6 @@ def delete_tour(id):
         return render_template('tour/manage_tours.html'), 500
 
 
-# TODO implement edit tour
 @app.route('/tour/<id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
