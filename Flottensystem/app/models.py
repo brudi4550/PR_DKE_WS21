@@ -7,6 +7,14 @@ from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import configure_mappers
 
 
+class Zug(db.Model):
+    nr = db.Column(db.String(255), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
+
+    def __repr__(self):
+        return '<Zugnummer: {}>'.format(self.nr)
+
 class Mitarbeiter(UserMixin, db.Model, AbstractConcreteBase):
     mitarbeiterNr = db.Column(db.Integer, primary_key=True)
     svnr = db.Column(db.Integer, index=True, unique=True, nullable=False)
@@ -48,6 +56,7 @@ class Wartungspersonal(Mitarbeiter):
 class Zugpersonal(Mitarbeiter):
     __tablename__ = 'zugpersonal'
     berufsbezeichnung = db.Column(db.String(255), nullable=False)
+    zug_nr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
     
     __mapper_args__ = { 'polymorphic_identity':'zugpersonal', 'concrete':True}
     
@@ -92,3 +101,13 @@ class Personenwagen(Wagen):
         return '<Wagen-Nr.: {}>'.format(self.nr)
         
 configure_mappers()
+
+class Wartung(db.Model):
+    wartungsNr = db.Column(db.Integer, primary_key=True)
+    von = db.Column(db.DateTime, index=True, nullable=False)
+    bis = db.Column(db.DateTime, index=True, nullable=False)
+
+    def __repr__(self):
+        return '<Wartungsnummer: {}>'.format(self.wartungsNr)
+        
+
