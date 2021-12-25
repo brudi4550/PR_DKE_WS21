@@ -32,6 +32,7 @@ def add_tour():
 @admin_required
 def manage_tours():
     tours = Tour.query.order_by(Tour.id.asc())
+
     return render_template('tour/manage_tours.html', tours=tours)
 
 
@@ -49,7 +50,7 @@ def delete_tour(id):
         return render_template('tour/manage_tours.html'), 500
 
 
-@app.route('/tour/<id>', methods=['GET', 'POST'])
+@app.route('/edit_tour/<id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_tour(id):
@@ -70,4 +71,4 @@ def edit_tour(id):
         db.session.commit()
         flash('Fahrt aktualisiert.')
         return redirect(url_for('manage_tours'))
-    return render_template('tour/tour.html', form=form, tour=tour)
+    return render_template('tour/edit_tour.html', form=form, tour=tour)

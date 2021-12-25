@@ -11,7 +11,7 @@ from app.routes.general import append_activity
 @app.route('/add_employee', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def register_new_employee():
+def add_employee():
     form = RegisterNewUserForm()
     if form.validate_on_submit():
         e = Employee(id=form.id.data,
@@ -57,7 +57,7 @@ def delete_employee(id):
 
 
 # TODO refactor this
-@app.route('/employee/<id>', methods=['GET', 'POST'])
+@app.route('/edit_employee/<id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def employee(id):
@@ -82,4 +82,4 @@ def employee(id):
         db.session.commit()
         flash('Mitarbeiter aktualisiert.')
         return redirect(url_for('manage_employees'))
-    return render_template('employee/employee.html', form=form)
+    return render_template('employee/edit_employee.html', form=form)

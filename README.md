@@ -14,7 +14,7 @@ Bei weiteren Starts muss nur mehr run.sh ausgeführt werden.
 Falls sich Dependencies ändern, kann install.sh erneut ausgeführt werden.
 
 Bei keinen Parametern versucht run.sh alle Systeme zu starten.<br>
-Es können auch die Systeme angegeben werden, die gestartet werden sollen.<br>
+Es kann auch angegeben werden welche Systeme gestartet werden sollen.<br>
 Reihenfolge der Parameter spielt keine Rolle.<br>
 Parameter:<br>
 fa (Fahrplansystem)<br>
@@ -29,5 +29,5 @@ oder<br>
 ./run.sh st ti fl <br>
 
 <br>
-Technologie-Stack:
+Technologie-Stack:<br>
 Flask, Python, Jinja, SQLite
