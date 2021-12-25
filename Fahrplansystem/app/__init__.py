@@ -9,6 +9,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from flask_bootstrap import Bootstrap
+from datetime import datetime, date
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -28,6 +29,7 @@ login.login_view = 'login'
 
 
 from app.routes.general import append_activity
+from app.models import System, update_timetable
 
 
 def admin_required(func):
@@ -60,3 +62,14 @@ if not app.debug:
 
     app.logger.setLevel(logging.INFO)
     app.logger.info('Fahrplansystem gestartet')
+
+
+sys = System.query.get(1)
+if sys is None:
+    sys = System()
+    db.session.add(sys)
+    db.session.commit()
+
+last_check = sys.last_system_check
+if last_check is None or last_check.date() < date.today():
+    update_timetable()

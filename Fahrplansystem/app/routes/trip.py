@@ -1,14 +1,14 @@
-from flask import render_template, redirect, request
+from flask import render_template, redirect, request, flash
 from flask_login import login_required
 
 from app import app, db, admin_required
 from app.forms import SingleTripForm, IntervalTripForm
 from app.models import Tour, Trip, Interval
 from app.routes.general import append_activity
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, date
 
 
-@app.route('/trips/<tour_id>', methods=['GET', 'POST'])
+@app.route('/manage_trips/<tour_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def manage_trips(tour_id):
@@ -20,9 +20,10 @@ def manage_trips(tour_id):
     add_interval_trip_form = IntervalTripForm()
     add_interval_trip_form.submit.label.text = "+"
     if add_interval_trip_form.validate_on_submit():
-        # TODO check interval trips on system startup, but only once a day
-        # implement database table, remember if intervals have already been checked on a given day
         start_date = add_interval_trip_form.start_date.data
+        if start_date <= date.today():
+            flash('Startzeitpunkt eines Intervalls darf nicht in der Vergangenheit liegen.')
+            return redirect('/trips/' + tour_id)
         end_date = start_date + timedelta(weeks=4)
         start_time = add_interval_trip_form.start_time.data
         end_time = add_interval_trip_form.end_time.data
@@ -42,7 +43,7 @@ def manage_trips(tour_id):
                 t.time = start_time
                 t.interval_id = iv.id
                 db.session.add(t)
-                # Converting datetime.time to datetime.datetime and back p
+                # Converting datetime.time to datetime.datetime and back
                 # because time doesn't support addition, datetime does
                 dummy_time = datetime(2021, 1, 1, hour=start_time.hour, minute=start_time.minute)
                 dummy_time = time_delta + dummy_time
@@ -67,12 +68,11 @@ def manage_trips(tour_id):
                            add_interval_trip_form=add_interval_trip_form)
 
 
-@app.route('/edit_single_trip/<tour_id>/<trip_id>', methods=['GET', 'POST'])
+@app.route('/edit_trip/<trip_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def edit_trip(tour_id, trip_id):
-    tour = Tour.query.filter_by(id=tour_id).first_or_404()
-    trip = tour.trips.filter_by(id=trip_id).first_or_404()
+def edit_trip(trip_id):
+    trip = Trip.query.filter_by(id=trip_id).first_or_404()
     form = SingleTripForm()
     form.submit.label.text = 'Durchführung speichern'
     if request.method == 'GET':
@@ -84,5 +84,5 @@ def edit_trip(tour_id, trip_id):
         trip.time = form.time.data
         trip.crew_id = form.assigned_crew.data
         db.session.commit()
-        return redirect('/trips/' + tour_id)
-    return render_template('trip/trip.html', form=form, trip=trip)
+        return redirect('/trips/' + str(trip.tour_id))
+    return render_template('trip/edit_trip.html', form=form, trip=trip)

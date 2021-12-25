@@ -4,7 +4,7 @@ from sqlalchemy import desc, asc
 
 from app import app, db
 from app.forms import LoginForm
-from app.models import Activity, Employee
+from app.models import Activity, Employee, System, update_timetable
 
 
 def append_activity(message):
@@ -58,3 +58,16 @@ def logout():
     append_activity(f'Mitarbeiter {current_user.first_name} {current_user.last_name} hat sich ausgeloggt.')
     logout_user()
     return redirect(url_for('login'))
+
+
+@app.route('/system_settings')
+def system_settings():
+    sys = System.query.get(1)
+    rushhours = sys.rushhours
+    return render_template('general/system_settings.html', sys=sys, rushhours=rushhours)
+
+
+@app.route('/update_timetable')
+def update_timetable_route():
+    update_timetable()
+    return redirect(url_for('system_settings'))

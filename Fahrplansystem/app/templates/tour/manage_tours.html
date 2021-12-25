@@ -26,28 +26,30 @@
                     <td>{{ tour.train }}</td>
                     <td>{{ tour.rushHourMultiplicator}}x</td>
                     <td>
-                        {% with next_trip=tours.filter_by(id=tour.id).first().trips.first() %}
-                        {% if next_trip %}
-                        Nächste Durchführung:
-                        {{ next_trip.date.day }}.{{ next_trip.date.month }}.{{ next_trip.date.year }}
-                        {{ next_trip.time.hour }}:{{ next_trip.time.minute }}<br/>
-                            {% with trip_count=tours.filter_by(id=tour.id).first().trips.count() %}
-                                {% if trip_count > 1 %}
-                                    <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                        {% with trip_count=tour.trip_count() %}
+                        {% if trip_count > 0 %}
+                        Nächste Durchführung:<br>
+                        {{ tour.next_trip().date.day }}.{{ tour.next_trip().date.month }}.{{ tour.next_trip().date.year }}
+                        {{ tour.next_trip().time.hour }}:{{ tour.next_trip().time.minute }}<br/>
+                            {% if trip_count > 1 %}
+                                {% if trip_count == 2 %}
+                                <p>{{ trip_count-1 }} weitere Durchführung</p>
+                                {% else %}
+                                <p>{{ trip_count-1 }} weitere Durchführungen</p>
                                 {% endif %}
-                            {% endwith%}
+                            {% endif %}
                         {% else %}
                             <p>Keine Durchführungen eingetragen</p>
                         {% endif %}
                         {% endwith %}
-                        <button class="manage_trips_button" tour_id="{{ tour.id }}">
+                        <a href="/manage_trips/{{ tour.id }}">
                             <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-                        </button>
+                        </a>
                     </td>
                     <td class="text-center">
-                        <button class="edit_button" tour_id="{{ tour.id }}">
+                        <a href="/edit_tour/{{ tour.id }}">
                             <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                        </button>
+                        </a>
                     </td>
                     <td class="text-center">
                         <button class="delete_button" tour_id="{{ tour.id }}">
