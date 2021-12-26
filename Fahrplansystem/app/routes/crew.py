@@ -1,8 +1,9 @@
 from flask import render_template, redirect, url_for
-from flask_login import current_user, login_required
+from flask_login import login_required, current_user
 
-from app import app, admin_required, db, append_activity
+from app import app, admin_required, db
 from app.models import Crew
+from app.routes.general import append_activity
 
 
 @app.route('/manage_crews', methods=['GET'])
@@ -36,3 +37,10 @@ def delete_crew(id):
         return render_template('tour/manage_tours.html'), 200
     else:
         return render_template('tour/manage_tours.html'), 500
+
+
+@app.route('/my_crew')
+@login_required
+def my_crew():
+    users_crew = Crew.query.filter_by(id=current_user.crew_id).first_or_404()
+    return render_template('crew/my_crew.html', crew=users_crew)

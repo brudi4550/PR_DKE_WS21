@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta, time, date
-from werkzeug.security import generate_password_hash, check_password_hash
-from app import app, db
+
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from app import db
 from app import login
 
 
@@ -12,8 +14,8 @@ def load_user(id):
 
 class Rushhour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start = db.Column(db.DateTime)
-    end = db.Column(db.DateTime)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
     system_id = db.Column(db.Integer, db.ForeignKey('system.id'))
 
 

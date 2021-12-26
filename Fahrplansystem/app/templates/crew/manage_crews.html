@@ -4,7 +4,7 @@
 {% block app_content %}
     <div id="deleteCrewFailed" class="alert alert-info hidden">Bordpersonalteam konnte nicht gelöscht werden.</div>
     <h1>Bordpersonalteams verwalten</h1>
-    <div class="col-md-12 manage_crews">
+    <div class="col-md-12">
         <table class="table table-hover">
             <tr>
                 <th>Bordpersonalteam ID</th>
@@ -43,16 +43,18 @@
                     {% endif %}
                     {% endwith %}
                     <td class="text-center">
-                        <button class="delete_button" crew_id="{{ crew.id }}">
+                        <button class="delete_crew" crew_id="{{ crew.id }}">
                             <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
                         </button>
                     </td>
                 </tr>
             {% endfor %}
         </table>
-        <button class="btn btn-primary add_empty_crew">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Leeres Bordpersonalteam hinzufügen
-        </button>
+        <form method="post" action="/add_empty_crew">
+            <button type="submit" class="btn btn-primary">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                Leeres Bordpersonalteam hinzufügen
+            </button>
+        </form>
     </div>
 {% endblock %}

@@ -5,7 +5,7 @@
     <div id="deleteEmployeeFailed" class="alert alert-info hidden">Benutzer konnte nicht gelöscht werden.</div>
     <h1>Benutzer verwalten</h1>
     <div class="col-md-10">
-        <table class="table table-hover manage_employees">
+        <table class="table table-hover">
             <tr>
                 <th>Mitarbeiter ID</th>
                 <th>Vorname</th>
@@ -30,7 +30,7 @@
                         </a>
                     </td>
                     <td class="text-center">
-                        <button class="delete_button" employee_id="{{ employee.id }}">
+                        <button class="delete_employee" employee_id="{{ employee.id }}">
                             <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
                         </button>
                     </td>

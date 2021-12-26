@@ -1,1 +1,1 @@
-FLASK_APP=timetableSystem.py 
+FLASK_APP=timetableSystem.py

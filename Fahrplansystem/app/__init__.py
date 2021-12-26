@@ -1,15 +1,16 @@
-from functools import wraps
-from flask import Flask, url_for, redirect, request, render_template
-from app.config import Config
-from sqlalchemy import MetaData
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager, current_user
 import logging
-from logging.handlers import RotatingFileHandler
 import os
+from datetime import date
+from functools import wraps
+from logging.handlers import RotatingFileHandler
+
+from flask import Flask, request, render_template
 from flask_bootstrap import Bootstrap
-from datetime import datetime, date
+from flask_login import LoginManager, current_user
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData, asc
+from app.config import Config
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -28,8 +29,6 @@ bootstrap = Bootstrap(app)
 login.login_view = 'login'
 
 
-from app.routes.general import append_activity
-from app.models import System, update_timetable
 
 
 def admin_required(func):
@@ -42,13 +41,13 @@ def admin_required(func):
         employee_id = current_user.id
         fn = current_user.first_name
         ln = current_user.last_name
-        append_activity(f'Mitarbeiter {fn} {ln} (ID:{employee_id}) hat versucht {url} aufzurufen, Method:{method}')
         return render_template('errors/404.html', url=url), 404
     return decorated_view
 
 
-from app import models, errors
-from app.routes import general, employee, crew, tour, trip, api
+from app import errors
+from app.models import System, update_timetable
+from app.routes import general, employee, crew, tour, trip, interval, api
 
 if not app.debug:
     if not os.path.exists('logs'):
@@ -64,12 +63,15 @@ if not app.debug:
     app.logger.info('Fahrplansystem gestartet')
 
 
-sys = System.query.get(1)
-if sys is None:
-    sys = System()
-    db.session.add(sys)
+timetable_system = System.query.get(1)
+if timetable_system is None:
+    timetable_system = System()
+    db.session.add(timetable_system)
     db.session.commit()
 
-last_check = sys.last_system_check
+last_check = timetable_system.last_system_check
 if last_check is None or last_check.date() < date.today():
     update_timetable()
+
+if __name__ == '__main__':
+    app().run(host='0.0.0.0', port=5000, debug=True)
