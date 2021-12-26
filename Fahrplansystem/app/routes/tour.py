@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, request
-from flask_login import current_user, login_required
+from flask_login import login_required
 
 from app import app, db, admin_required
-from app.forms import TourForm, EditTourForm
-from app.models import Tour, Trip
+from app.forms import TourForm
+from app.models import Tour
 from app.routes.api import get_route_choices, get_train_choices
 from app.routes.general import append_activity
 

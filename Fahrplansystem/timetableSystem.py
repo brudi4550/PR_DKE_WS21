@@ -1,5 +1,5 @@
-from app import app, db
-from app.models import Employee, Activity, Tour, Trip, Crew, Interval
+from app import app
+from app.models import *
 
 
 @app.shell_context_processor

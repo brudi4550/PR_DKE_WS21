@@ -96,3 +96,9 @@ class IntervalTripForm(FlaskForm):
     end_time = TimeField('Und', validators=[DataRequired()])
     interval = IntegerField('Im Intervall von: (in Minuten)', validators=[DataRequired()])
     submit = SubmitField('Intervall Durchführung hinzufügen')
+
+
+class RushhourForm(FlaskForm):
+    start_time = TimeField('Von', validators=[DataRequired()])
+    end_time = TimeField('Bis', validators=[DataRequired()])
+    submit = SubmitField('Hinzufügen', validators=[DataRequired()])

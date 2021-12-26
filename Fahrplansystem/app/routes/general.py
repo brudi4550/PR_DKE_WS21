@@ -1,10 +1,13 @@
+from datetime import datetime
+
 from flask import render_template, flash, redirect, url_for
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import desc, asc
 
-from app import app, db
-from app.forms import LoginForm
-from app.models import Activity, Employee, System, update_timetable
+# TODO figure out why importing admin_required wont work
+from app import app, db, admin_required
+from app.forms import LoginForm, RushhourForm
+from app.models import *
 
 
 def append_activity(message):
@@ -60,14 +63,52 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/system_settings')
+@app.route('/system_settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def system_settings():
     sys = System.query.get(1)
     rushhours = sys.rushhours
-    return render_template('general/system_settings.html', sys=sys, rushhours=rushhours)
+    rushhour_form = RushhourForm()
+    rushhour_form.submit.label.text = '+'
+    if rushhour_form.validate_on_submit():
+        r = Rushhour()
+        start_time_date = datetime(year=2021,
+                                   month=1,
+                                   day=1,
+                                   hour=rushhour_form.start_time.data.hour,
+                                   minute=rushhour_form.start_time.data.minute)
+        end_time_date = datetime(year=2021,
+                                 month=1,
+                                 day=1,
+                                 hour=rushhour_form.end_time.data.hour,
+                                 minute=rushhour_form.end_time.data.minute)
+        r.start_time = start_time_date
+        r.end_time = end_time_date
+        r.system_id = 1
+        db.session.add(r)
+        db.session.commit()
+        redirect(url_for('system_settings'))
+    return render_template('general/system_settings.html', sys=sys, rushhours=rushhours, rushhour_form=rushhour_form)
+
+
+@app.route('/edit_rushhour/<rushhour_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_rushhour(rushhour_id):
+    return render_template('general/edit_rushhour.html')
+
+
+@app.route('/delete_rushhour/<rushhour_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_rushhour(rushhour_id):
+    return render_template(url_for('system_settings'))
 
 
 @app.route('/update_timetable')
+@login_required
+@admin_required
 def update_timetable_route():
     update_timetable()
     return redirect(url_for('system_settings'))

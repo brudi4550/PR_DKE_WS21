@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1>Meine zugeteilten Durchführungen</h1>
+    <div class="row">
+       <div class="panel panel-primary">
+           <div class="panel-heading">Alle Durchführungen für Bordpersonalteam {{ crew.id }}</div>
+           <div class="panel-body">
+               <div class="col-md-10">
+                   <table class="table table-hover">
+                       <tr>
+                           <th>Durchführungs-ID</th>
+                           <th>Datum</th>
+                           <th>Zeit</th>
+                           <th>Von</th>
+                           <th>Nach</th>
+                       </tr>
+                       {% for trip in crew.trips %}
+                       <tr>
+                           <td>{{ trip.id }}</td>
+                           <td>{{ trip.date }}</td>
+                           <td>{{ trip.time }}</td>
+                           <td>{{ trip.start }}</td>
+                           <td>{{ trip.end }}</td>
+                       </tr>
+                       {% endfor %}
+                   </table>
+               </div>
+           </div>
+       </div>
+    </div>
+{% endblock %}

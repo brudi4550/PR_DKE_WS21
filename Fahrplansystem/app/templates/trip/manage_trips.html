@@ -25,6 +25,7 @@
                             </form>
                         </tr>
                         <tr>
+                            <th>ID</th>
                             <th>Datum</th>
                             <th>Zeit</th>
                             <th>Bordpersonalteam</th>
@@ -33,6 +34,7 @@
                         </tr>
                         {% for single_trip in single_trips %}
                         <tr class="single_trips">
+                            <td>{{ single_trip.id }}</td>
                             <td>{{ single_trip.date }}</td>
                             <td>{{ single_trip.time }}</td>
                             <td>{{ single_trip.crew_id }}</td>
