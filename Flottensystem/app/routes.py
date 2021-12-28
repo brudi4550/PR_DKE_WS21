@@ -87,14 +87,14 @@ def registerUser(name):
         return redirect(url_for('home_personal'))
     if name == 'Zugpersonal':   # Es wird überprüft, ob im übergebenen Parameter 'name' 'Zugpersonal' eingetragen ist. Ist dies der Fall wird ein Formular für das Zugpersonal verwendet der eine kleine Abweichung im Unterschied zu den anderen Mitarbeitern enthält
         form = RegistrationFormZugpersonal()
-        ''' Als nächstes werden die Zugnummern dynamisch dem SelectField "zug_nr" übergeben. Auch der User sieht bei der Beschriftung die Zugnummer
+        ''' Als nächstes werden die Zugnummern dynamisch dem SelectField "zugNr" übergeben. Auch der User sieht bei der Beschriftung die Zugnummer
             (rechter Ausruck von (z.nr, z.nr)). Hier wird dem User bewusst nicht der Name des Zuges (also (z.nr, z.name)) angezeigt, da Zugnamen 
             redundant sein können und der User somit nicht wissen kann, welches Feld im SelectField nun das gewünschte ist. Als Beispiel kann man
             den Zugnamen Railjet nehmen: Es gibt Railjet Züge mit unterschiedlichen Zugnummern (z.B.: RJX 368, RJX 660, usw.). Jedoch haben all
             diese Zugnummern den gleichen Zugnamen, nämlich "Railjet". Würde man somit dem User beim SelectField den Zugnamen anzeigen (also indem 
             man in der nachfolgenden Zeile (z.nr, z.name) eingibt), dann würde nur "Railjet" stehen und der User wüsste dadurch nicht, welches sein 
             gewünschter Zug ist. '''
-        form.zug_nr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
+        form.zugNr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
     else:   # Ist im Parameter 'name' nicht 'Zugpersonal' eingetragen, so wird das andere Formular für die Registrierung eines Users verwendet
     	form = RegistrationForm()
     if form.validate_on_submit():
@@ -103,7 +103,7 @@ def registerUser(name):
         elif name == 'Wartungspersonal':
             user = Wartungspersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data)
         elif name == 'Zugpersonal':
-            user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data, zug_nr=form.zug_nr.data)
+            user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data, zugNr=form.zugNr.data)
         user.set_password(form.passwort.data)
         db.session.add(user)
         db.session.commit() # Hier werden die Daten persistiert
@@ -140,7 +140,7 @@ def editUser(mitarbeiterNr):
     elif type(user) == Zugpersonal:
         typ = 'Zugpersonal'
         form = EditProfileFormZugpersonal(user.mitarbeiterNr, user.svnr, user.email)
-        form.zug_nr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
+        form.zugNr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
     else:
         typ = 'Wartungspersonal'
         form = EditProfileForm(user.mitarbeiterNr, user.svnr, user.email)
@@ -152,7 +152,7 @@ def editUser(mitarbeiterNr):
         user.email = form.email.data
         if typ == 'Zugpersonal':
             user.berufsbezeichnung = form.berufsbezeichnung.data
-            user.zug_nr = form.zug_nr.data
+            user.zugNr = form.zugNr.data
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateUser'))
@@ -164,7 +164,7 @@ def editUser(mitarbeiterNr):
         form.email.data = user.email
         if typ == 'Zugpersonal':
             form.berufsbezeichnung.data = user.berufsbezeichnung
-            form.zug_nr.data = user.zug_nr
+            form.zugNr.data = user.zugNr
     return render_template('edit_user.html', form=form, typ=typ)
 
 @app.route('/User_löschen/<mitarbeiterNr>', methods=['POST'])
@@ -358,7 +358,7 @@ def editTrain(nr):
         return redirect(url_for('home_personal'))
     zug = Zug.query.filter_by(nr=nr).first()
     if zug is None:
-        flash('Es wurde kein Zug unter der zugnummer {} gefunden!'.format(nr))
+        flash('Es wurde kein Zug unter der Zugnummer {} gefunden!'.format(nr))
         return redirect(url_for('updateTrain'))
     form = EditZugForm(zug.nr)
     if form.validate_on_submit():

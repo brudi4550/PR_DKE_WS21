@@ -83,7 +83,7 @@ class Wartungspersonal(Mitarbeiter):
 class Zugpersonal(Mitarbeiter):
     __tablename__ = 'zugpersonal'
     berufsbezeichnung = db.Column(db.String(255), nullable=False)
-    zug_nr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
     
     __mapper_args__ = { 'polymorphic_identity':'zugpersonal', 'concrete':True}
     
@@ -97,9 +97,7 @@ class Administrator(Mitarbeiter):
     
     def __repr__(self):
         return '<Administrator {} {}>'.format(self.vorname, self.nachname)
-        
-configure_mappers()
-
+ 
 
 class Wagen(db.Model, AbstractConcreteBase):
     nr = db.Column(db.Integer, primary_key=True)
@@ -114,8 +112,6 @@ class Triebwagen(Wagen):
     
     __mapper_args__ = { 'polymorphic_identity':'triebwagen', 'concrete':True}
     
-    def __repr__(self): # ANSCHAUEN !!!!!!!!!!!!
-        return '<Wagen-Nr.: {}>'.format(self.nr)
         
 class Personenwagen(Wagen):
     __tablename__ = 'personenwagen'
@@ -123,20 +119,15 @@ class Personenwagen(Wagen):
     maximalgewicht = db.Column(db.Integer, nullable=False)
     
     __mapper_args__ = { 'polymorphic_identity':'personenwagen', 'concrete':True}
-    
-    def __repr__(self): # ANSCHAUEN !!!!!!!!!!!!
-        return '<Wagen-Nr.: {}>'.format(self.nr)
         
-configure_mappers()
-
 
 class Wartung(db.Model):
     wartungsNr = db.Column(db.Integer, primary_key=True)
     von = db.Column(db.DateTime, index=True, nullable=False)
     bis = db.Column(db.DateTime, index=True, nullable=False)
-    zug_nr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
 
     def __repr__(self):
         return '<Wartungsnummer: {}>'.format(self.wartungsNr)
-        
 
+configure_mappers()

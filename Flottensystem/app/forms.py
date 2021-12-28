@@ -75,7 +75,7 @@ class RegistrationFormZugpersonal(FlaskForm):
                                                                   ('Triebfahrzeugbeleiter', 'Triebfahrzeugbegleiter'),
                                                                   ('Zugführer', 'Zugführer'), ('Zugschaffner', 'Zugschaffner'),
                                                                   ('Zugbegleiter', 'Zugbegleiter')], validators=[DataRequired()])
-    zug_nr = SelectField('Zugewiesener Zug', validators=[DataRequired()])
+    zugNr = SelectField('Zugewiesener Zug', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     passwort = PasswordField('Passwort', validators=[DataRequired(), Length(min=4)])
     passwort2 = PasswordField(
@@ -165,7 +165,7 @@ class EditProfileFormZugpersonal(FlaskForm):
                                                                   ('Triebfahrzeugbeleiter', 'Triebfahrzeugbegleiter'),
                                                                   ('Zugführer', 'Zugführer'), ('Zugschaffner', 'Zugschaffner'),
                                                                   ('Zugbegleiter', 'Zugbegleiter')], validators=[DataRequired()])
-    zug_nr = SelectField('Zugewiesener Zug', validators=[DataRequired()])
+    zugNr = SelectField('Zugewiesener Zug', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Bestätigen')
 
