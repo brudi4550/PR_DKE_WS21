@@ -113,4 +113,22 @@ $(document).ready(function() {
         });
     });
 
+    $('.delete_interval').click(function() {
+        if (!window.confirm("Sind Sie sich sicher?")) {
+            return
+        }
+        var interval_id = $(this).attr('interval_id')
+        var ajaxReq = $.ajax({
+            url: '/manage_interval/'+ interval_id,
+            type: 'DELETE',
+            statusCode: {
+                200: function() {
+                    window.location.reload()
+                },
+                500: function() {
+                    $("#deleteTripFailed").temporaryRemoveClass("hidden", 3000);
+                }
+            }
+        });
+    });
 });

@@ -53,7 +53,7 @@ def delete_employee(id):
         append_activity(f'Mitarbeiter {to_be_deleted.first_name} {to_be_deleted.last_name} wurde gelöscht.')
         return render_template('employee/manage_employees.html'), 200
     else:
-        return render_template('emplyee/manage_employees.html'), 500
+        return render_template('employee/manage_employees.html'), 500
 
 
 # TODO refactor this

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, time, date, MAXYEAR
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,29 +20,36 @@ class Rushhour(db.Model):
 
 
 def update_timetable():
-    start_date = date.today()
-    end_date = start_date + timedelta(weeks=4)
     tours = Tour.query.all()
     for tour in tours:
         for interval in tour.intervals:
             for trip in interval.trips:
-                if trip.date < start_date:
+                if trip.date < date.today():
                     db.session.delete(trip)
+            start_date = interval.start_date
+            datetime_end_date = timedelta(weeks=4) + start_date
+            end_date = date(year=datetime_end_date.year,
+                            month=datetime_end_date.month,
+                            day=datetime_end_date.day)
+            if interval.end_date is not None and interval.end_date < end_date:
+                end_date = interval.end_date
             start_time = interval.start_time
             end_time = interval.end_time
             iv_minutes_delta = timedelta(minutes=interval.interval_minutes)
             while start_date < end_date:
-                t = Trip.query.filter_by(interval_id=interval.id)\
+                trips_on_date = Trip.query.filter_by(interval_id=interval.id)\
                     .filter_by(date=start_date)
                 while start_time < end_time:
-                    if not isinstance(t, Trip):
-                        t = t.filter_by(time=start_time).first()
-                    if t is None:
-                        t = Trip()
-                        t.date = start_date
-                        t.time = start_time
-                        t.interval_id = interval.id
-                        db.session.add(t)
+                    if isinstance(trips_on_date, Trip):
+                        trip = trips_on_date
+                    else:
+                        trip = trips_on_date.filter_by(time=start_time).first()
+                    if trip is None:
+                        trip = Trip()
+                        trip.date = start_date
+                        trip.time = start_time
+                        trip.interval_id = interval.id
+                        db.session.add(trip)
                     # Converting datetime.time to datetime.datetime and back
                     # because time doesn't support addition, datetime does
                     dummy_time = datetime(2021, 1, 1, hour=start_time.hour, minute=start_time.minute)
@@ -123,6 +130,8 @@ class Crew(db.Model):
 
 class Interval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
     start_time = db.Column(db.Time, index=True, default=datetime.now().time())
     end_time = db.Column(db.Time, index=True, default=datetime.now().time())
     interval_minutes = db.Column(db.Integer)
@@ -147,7 +156,9 @@ class Tour(db.Model):
         return single_trips + interval_trips
 
     def next_trip(self):
-        next_trip = self.trips.first()
+        dummy_date = date(year=MAXYEAR, month=1, day=1)
+        dummy_time = time()
+        next_trip = Trip(date=dummy_date, time=dummy_time)
         for trip in self.trips:
             if trip.date < next_trip.date:
                 next_trip = trip
