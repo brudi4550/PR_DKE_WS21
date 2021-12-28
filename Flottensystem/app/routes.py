@@ -3,8 +3,11 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm, EditTriebwagenForm, EditPersonenwagenForm
-from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator, Wagen, Triebwagen, Personenwagen
+from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, \
+    EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm, EditTriebwagenForm, EditPersonenwagenForm, \
+    ZugForm, EditZugForm
+from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator, Wagen, Triebwagen, Personenwagen, \
+    Zug
 
 
 @app.route('/')
@@ -84,6 +87,14 @@ def registerUser(name):
         return redirect(url_for('home_personal'))
     if name == 'Zugpersonal':   # Es wird überprüft, ob im übergebenen Parameter 'name' 'Zugpersonal' eingetragen ist. Ist dies der Fall wird ein Formular für das Zugpersonal verwendet der eine kleine Abweichung im Unterschied zu den anderen Mitarbeitern enthält
         form = RegistrationFormZugpersonal()
+        ''' Als nächstes werden die Zugnummern dynamisch dem SelectField "zug_nr" übergeben. Auch der User sieht bei der Beschriftung die Zugnummer
+            (rechter Ausruck von (z.nr, z.nr)). Hier wird dem User bewusst nicht der Name des Zuges (also (z.nr, z.name)) angezeigt, da Zugnamen 
+            redundant sein können und der User somit nicht wissen kann, welches Feld im SelectField nun das gewünschte ist. Als Beispiel kann man
+            den Zugnamen Railjet nehmen: Es gibt Railjet Züge mit unterschiedlichen Zugnummern (z.B.: RJX 368, RJX 660, usw.). Jedoch haben all
+            diese Zugnummern den gleichen Zugnamen, nämlich "Railjet". Würde man somit dem User beim SelectField den Zugnamen anzeigen (also indem 
+            man in der nachfolgenden Zeile (z.nr, z.name) eingibt), dann würde nur "Railjet" stehen und der User wüsste dadurch nicht, welches sein 
+            gewünschter Zug ist. '''
+        form.zug_nr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
     else:   # Ist im Parameter 'name' nicht 'Zugpersonal' eingetragen, so wird das andere Formular für die Registrierung eines Users verwendet
     	form = RegistrationForm()
     if form.validate_on_submit():
@@ -92,7 +103,7 @@ def registerUser(name):
         elif name == 'Wartungspersonal':
             user = Wartungspersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data)
         elif name == 'Zugpersonal':
-            user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data)
+            user = Zugpersonal(mitarbeiterNr=form.mitarbeiterNr.data, svnr=form.svnr.data, vorname=form.vorname.data, nachname=form.nachname.data, email=form.email.data, berufsbezeichnung=form.berufsbezeichnung.data, zug_nr=form.zug_nr.data)
         user.set_password(form.passwort.data)
         db.session.add(user)
         db.session.commit() # Hier werden die Daten persistiert
@@ -129,6 +140,7 @@ def editUser(mitarbeiterNr):
     elif type(user) == Zugpersonal:
         typ = 'Zugpersonal'
         form = EditProfileFormZugpersonal(user.mitarbeiterNr, user.svnr, user.email)
+        form.zug_nr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
     else:
         typ = 'Wartungspersonal'
         form = EditProfileForm(user.mitarbeiterNr, user.svnr, user.email)
@@ -140,6 +152,7 @@ def editUser(mitarbeiterNr):
         user.email = form.email.data
         if typ == 'Zugpersonal':
             user.berufsbezeichnung = form.berufsbezeichnung.data
+            user.zug_nr = form.zug_nr.data
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateUser'))
@@ -151,6 +164,7 @@ def editUser(mitarbeiterNr):
         form.email.data = user.email
         if typ == 'Zugpersonal':
             form.berufsbezeichnung.data = user.berufsbezeichnung
+            form.zug_nr.data = user.zug_nr
     return render_template('edit_user.html', form=form, typ=typ)
 
 @app.route('/User_löschen/<mitarbeiterNr>', methods=['POST'])
@@ -297,7 +311,7 @@ def deleteWaggon(nr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Waggon löschen zu können!')
         return redirect(url_for('home_personal'))
-    form=EmptyForm()
+    form = EmptyForm()
     if form.validate_on_submit():
         wagen = Wagen.query.filter_by(nr=nr).first()
         if wagen is None: # Wird kein Wagggon gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
@@ -308,4 +322,85 @@ def deleteWaggon(nr):
         flash('Löschen des Waggons mit der Wagennummer {} wurde erfolgreich durchgeführt'.format(nr))
         return redirect(url_for('updateWaggon'))
     else:
-        return redirect(url_for('updateWaggonr'))
+        return redirect(url_for('updateWaggon'))
+
+
+@app.route('/Zug_erstellen', methods=['GET', 'POST'])
+@login_required
+def createTrain():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen Zug erstellen zu können!')
+        return redirect(url_for('home_personal'))
+    form = ZugForm()
+    if form.validate_on_submit():
+        zug = Zug(nr=form.nr.data, name=form.name.data)
+        db.session.add(zug)
+        db.session.commit()
+        flash('Zug wurde erfolgreich erstellt!')
+        return redirect(url_for('createTrain'))
+    return render_template('create_zug.html', form=form)
+
+@app.route('/Zug_bearbeiten')
+@login_required
+def updateTrain():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen Zug bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    zug = Zug.query.all()
+    form = EmptyForm()
+    return render_template('edit_zug_overview.html', zug=zug, form=form)
+
+@app.route('/Zug_bearbeiten/<nr>', methods=['GET', 'POST'])
+@login_required
+def editTrain(nr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen bestehenden Waggon bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    zug = Zug.query.filter_by(nr=nr).first()
+    if zug is None:
+        flash('Es wurde kein Zug unter der zugnummer {} gefunden!'.format(nr))
+        return redirect(url_for('updateTrain'))
+    form = EditZugForm(zug.nr)
+    if form.validate_on_submit():
+        zug.nr = form.nr.data
+        zug.name = form.name.data
+        db.session.commit()
+        flash('Änderungen wurden erfolgreich durchgeführt!')
+        return redirect(url_for('updateTrain'))
+    elif request.method == 'GET':
+        form.nr.data = zug.nr
+        form.name.data = zug.name
+    return render_template('edit_zug.html', form=form)
+
+@app.route('/Zug_löschen/<nr>', methods=['POST'])
+@login_required
+def deleteTrain(nr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um einen Zug löschen zu können!')
+        return redirect(url_for('home_personal'))
+    form = EmptyForm()
+    if form.validate_on_submit():
+        zug = Zug.query.filter_by(nr=nr).first()
+        if zug is None: # Wird kein Zug gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
+            flash('Löschen eines nicht vorhandenen Zuges nicht möglich')
+            return redirect(url_for('updateTrain'))
+        db.session.delete(zug)
+        db.session.commit()
+        flash('Löschen des Zuges mit der Zugnummer {} wurde erfolgreich durchgeführt'.format(nr))
+        return redirect(url_for('updateTrain'))
+    else:
+        return redirect(url_for('updateTrain'))
+
+
+@app.route('/Zugübersicht')
+@login_required
+def trainOverview():
+    zug = Zug.query.order_by('name').all()
+    return render_template('zug_overview.html', zug=zug)
+
+@app.route('/Waggonübersicht')
+@login_required
+def waggonOverview():
+    triebwagen = Triebwagen.query.all()
+    personenwagen = Personenwagen.query.all()
+    return render_template('wagen_overview.html', triebwagen=triebwagen, personenwagen=personenwagen)

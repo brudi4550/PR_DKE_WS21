@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if zug == [] %}
+        <p>Keine Züge zum bearbeiten verfügbar!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% else %}
+        <h4>Bestehende Züge bearbeiten:</h4>
+        <table class="table table-hover">
+            <tr>
+                <th>Zugnummer</th>
+                <th>Zugname</th>
+                <th></th>
+                <th></th>
+            </tr>
+            {% for z in zug %}
+                <tr>
+                    <td>{{ z.nr }}</td>
+                    <td>{{ z.name }}</td>
+                    <td>
+                        <a class="btn btn-default" href="{{ url_for('editTrain', nr=z.nr) }}" role="button">Bearbeiten</a>
+                    </td>
+                    <td>
+                        <form action="{{ url_for('deleteTrain', nr=z.nr) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            {{ wtf.form_errors(form, hiddens="only") }}
+
+                            {{ wtf.form_field(form.submit) }}
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

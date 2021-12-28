@@ -3,52 +3,54 @@
 
 {% block app_content %}
     {% if wartungspersonal == [] and zugpersonal == [] %}
-    <p>Keine Mitarbeiter zum bearbeiten verfügbar!</p>
-    <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+        <p>Keine Mitarbeiter zum bearbeiten verfügbar!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% else %}
+        <h4>Bestehende Benutzer bearbeiten:</h4><br>
+        <table class="table table-hover">
+            <tr>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>Personalabteilung</th>
+                <th></th>
+                <th></th>
+            </tr>
+            {% for w in wartungspersonal %}
+            <tr>
+                <td>{{ w.vorname }}</td>
+                <td>{{ w.nachname }}</td>
+                <td>Wartungspersonal</td>
+                <td>
+                    <a class="btn btn-default" href="{{ url_for('editUser', mitarbeiterNr=w.mitarbeiterNr) }}" role="button">Bearbeiten</a>
+                </td>
+                <td>
+                    <form action="{{ url_for('deleteUser', mitarbeiterNr=w.mitarbeiterNr) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_errors(form, hiddens="only") }}
+
+                        {{ wtf.form_field(form.submit) }}
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            {% for z in zugpersonal %}
+            <tr>
+                <td>{{ z.vorname }}</td>
+                <td>{{ z.nachname }}</td>
+                <td>Zugpersonal</td>
+                <td>
+                    <a class="btn btn-default" href="{{ url_for('editUser', mitarbeiterNr=z.mitarbeiterNr) }}" role="button">Bearbeiten</a>
+                </td>
+                <td>
+                    <form action="{{ url_for('deleteUser', mitarbeiterNr=z.mitarbeiterNr) }}"  method="post">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_errors(form, hiddens="only") }}
+
+                        {{ wtf.form_field(form.submit) }}
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     {% endif %}
-    <table class="table table-hover">
-        <tr>
-            <th>Vorname</th>
-            <th>Nachname</th>
-            <th>Personalabteilung</th>
-            <th></th>
-            <th></th>
-        </tr>
-        {% for w in wartungspersonal %}
-        <tr>
-            <td>{{ w.vorname }}</td>
-            <td>{{ w.nachname }}</td>
-            <td>Wartungspersonal</td>
-            <td>
-                <a class="btn btn-default" href="{{ url_for('editUser', mitarbeiterNr=w.mitarbeiterNr) }}" role="button">Bearbeiten</a>
-            </td>
-            <td>
-                <form action="{{ url_for('deleteUser', mitarbeiterNr=w.mitarbeiterNr) }}" method="post">
-                    {{ form.hidden_tag() }}
-                    {{ wtf.form_errors(form, hiddens="only") }}
-                    
-                    {{ wtf.form_field(form.submit) }}
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        {% for z in zugpersonal %}
-        <tr>
-            <td>{{ z.vorname }}</td>
-            <td>{{ z.nachname }}</td>
-            <td>Zugpersonal</td>
-            <td>
-                <a class="btn btn-default" href="{{ url_for('editUser', mitarbeiterNr=z.mitarbeiterNr) }}" role="button">Bearbeiten</a>
-            </td>
-            <td>
-                <form action="{{ url_for('deleteUser', mitarbeiterNr=z.mitarbeiterNr) }}"  method="post">
-                    {{ form.hidden_tag() }}
-                    {{ wtf.form_errors(form, hiddens="only") }}
-                    
-                    {{ wtf.form_field(form.submit) }}
-                </form>
-            </td>   
-        </tr>
-        {% endfor %}
-    </table>
 {% endblock %}
