@@ -31,7 +31,7 @@ oder<br>
 <br>
 Technologie-Stack:<br>
 Flask, Python, Jinja, SQLite<br>
-
+<br>
 Admin-Login für Fahrplansystem:<br>
 Mitarbeiter-ID: 1<br>
 Passwort: 1234
