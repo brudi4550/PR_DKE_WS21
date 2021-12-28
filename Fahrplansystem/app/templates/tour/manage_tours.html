@@ -28,16 +28,18 @@
                     <td>
                         {% with trip_count=tour.trip_count() %}
                         {% if trip_count > 0 %}
-                        Nächste Durchführung:<br>
-                        {{ tour.next_trip().date.day }}.{{ tour.next_trip().date.month }}.{{ tour.next_trip().date.year }}
-                        {{ tour.next_trip().time.hour }}:{{ tour.next_trip().time.minute }}<br/>
-                            {% if trip_count > 1 %}
-                                {% if trip_count == 2 %}
-                                <p>{{ trip_count-1 }} weitere Durchführung</p>
-                                {% else %}
-                                <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                            {% with next_trip=tour.next_trip() %}
+                            Nächste Durchführung:<br>
+                            {{ next_trip.date.strftime('%d.%m.%Y')}}
+                            {{ next_trip.time.strftime('%H:%M:%S')}}<br/>
+                                {% if trip_count > 1 %}
+                                    {% if trip_count == 2 %}
+                                        <p>{{ trip_count-1 }} weitere Durchführung</p>
+                                    {% else %}
+                                        <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
+                            {% endwith %}
                         {% else %}
                             <p>Keine Durchführungen eingetragen</p>
                         {% endif %}

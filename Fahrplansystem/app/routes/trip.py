@@ -12,6 +12,7 @@ from app.models import Tour, Trip, Interval, Crew
 @login_required
 @admin_required
 def manage_trips(tour_id):
+    session['prev_url'] = request.referrer
     tour = Tour.query.filter_by(id=tour_id).first_or_404()
     intervals = tour.intervals.all()
     single_trips = tour.trips.all()
@@ -29,6 +30,7 @@ def manage_trips(tour_id):
         end_time = add_interval_trip_form.end_time.data
         time_delta = timedelta(minutes=add_interval_trip_form.interval.data)
         iv = Interval()
+        iv.start_date = start_date
         iv.tour_id = tour_id
         iv.start_time = start_time
         iv.end_time = end_time

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request, session
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import desc, asc
 
@@ -96,14 +96,45 @@ def system_settings():
 @login_required
 @admin_required
 def edit_rushhour(rushhour_id):
-    return render_template('general/edit_rushhour.html')
+    form = RushhourForm()
+    form.submit.label.text = 'Stoßzeit speichern'
+    rushhour = Rushhour.query.filter_by(id=rushhour_id).first_or_404()
+    if request.method == 'GET':
+        session['prev_url'] = request.referrer
+        form.start_time.data = rushhour.start_time
+        form.end_time.data = rushhour.end_time
+    if form.validate_on_submit():
+        start_time_date = datetime(year=2021,
+                                   month=1,
+                                   day=1,
+                                   hour=form.start_time.data.hour,
+                                   minute=form.start_time.data.minute)
+        end_time_date = datetime(year=2021,
+                                 month=1,
+                                 day=1,
+                                 hour=form.end_time.data.hour,
+                                 minute=form.end_time.data.minute)
+        rushhour.start_time = start_time_date
+        rushhour.end_time = end_time_date
+        db.session.commit()
+        return redirect(session['prev_url'])
+    return render_template('general/edit_rushhour.html', form=form)
 
 
 @app.route('/delete_rushhour/<rushhour_id>', methods=['DELETE'])
 @login_required
 @admin_required
 def delete_rushhour(rushhour_id):
-    return render_template(url_for('system_settings'))
+    to_be_deleted = Rushhour.query.filter_by(id=rushhour_id).first()
+    if to_be_deleted is not None:
+        db.session.delete(to_be_deleted)
+        db.session.commit()
+        start = to_be_deleted.start_time.strftime('%H:%M')
+        end = to_be_deleted.end_time.strftime('%H:%M')
+        append_activity(f'Stoßzeit {to_be_deleted.id} (Beginn: {start}, Ende: {end}) wurde gelöscht.')
+        return redirect(url_for('system_settings')), 200
+    else:
+        return redirect(url_for('system_settings')), 500
 
 
 @app.route('/update_timetable')
