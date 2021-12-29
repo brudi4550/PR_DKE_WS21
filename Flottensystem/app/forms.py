@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
+    SelectField, DateTimeField, SelectMultipleField, widgets
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 from app.models import Mitarbeiter, Wagen, Zug, Wartung
-
 
 ''' Folgende Vorgehensweise wurde bei der Codebeschreibung vorgenommen: Es wurde darauf geachtet, dass der Code nur einmal beschrieben wurde.
     In den darauf folgenden Codebeschreibungen befinden sich wenige bis teilweise keine Beschreibungen. Hier wird darauf verwiesen, in den 
@@ -323,3 +323,37 @@ class EditZugForm(FlaskForm):
             zug = Zug.query.filter_by(nr=nr.data).first()
             if zug is not None:
                 raise ValidationError('Diese Zugnummer ist bereits vergeben! Bitte geben sie eine andere Zugnummer ein.')
+
+class WartungForm(FlaskForm):
+    wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
+    von = DateTimeField('Von', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    bis = DateTimeField('Bis', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    #mitarbeiterNr = SelectMultipleField('Wartungspersonal', validators=[DataRequired()])
+    zugNr = SelectField('Zugnummer', validators=[DataRequired()])
+    submit = SubmitField('Erstellen')
+
+    def validate_nr(self, wartungsNr):
+        for character in wartungsNr.data:
+            if not character.isdigit():
+                raise ValidationError('Die Wartungsnummer darf nur aus Ziffern bestehen!')
+
+
+class EditWartungForm(FlaskForm):
+    wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
+    von = DateTimeField('Von', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    bis = DateTimeField('Bis', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    zugNr = SelectField('Zugnummer', validators=[DataRequired()])
+    submit = SubmitField('Erstellen')
+
+    def __init__(self, original_nr, *args, **kwargs):
+        super(EditWartungForm, self).__init__(*args, **kwargs)
+        self.original_nr = original_nr
+
+    def validate_nr(self, wartungsNr):
+        for character in wartungsNr.data:
+            if not character.isdigit():
+                raise ValidationError('Die Wartungsnummer darf nur aus Ziffern bestehen!')
+        if int(wartungsNr.data) != self.original_nr:
+            wartung = Wartung.query.filter_by(wartungsNr=wartungsNr.data).first()
+            if wartung is not None:
+                raise ValidationError('Diese Wartungsnummer ist bereits vergeben! Bitte geben sie eine andere Wartungsnummer ein.')

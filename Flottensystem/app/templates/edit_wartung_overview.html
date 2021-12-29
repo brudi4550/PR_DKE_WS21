@@ -2,27 +2,31 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% if zug == [] %}
-        <p>Keine Züge zum bearbeiten verfügbar!</p>
+    {% if wartung == [] %}
+        <p>Keine Wartungen zum bearbeiten verfügbar!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
     {% else %}
-        <h4>Bestehende Züge bearbeiten:</h4><br>
+        <h4>Bestehende Wartungen bearbeiten:</h4><br>
         <table class="table table-hover">
             <tr>
+                <th>Wartungsnummer</th>
+                <th>Von</th>
+                <th>Bis</th>
                 <th>Zugnummer</th>
-                <th>Zugname</th>
                 <th></th>
                 <th></th>
             </tr>
-            {% for z in zug %}
+            {% for w in wartung %}
                 <tr>
-                    <td>{{ z.nr }}</td>
-                    <td>{{ z.name }}</td>
+                    <td>{{ w.wartungsNr }}</td>
+                    <td>{{ w.von.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ w.bis.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ w.zugNr }}</td>
                     <td>
-                        <a class="btn btn-default" href="{{ url_for('editTrain', nr=z.nr) }}" role="button">Bearbeiten</a>
+                        <a class="btn btn-default" href="{{ url_for('editMaintenance', wartungsNr=w.wartungsNr) }}" role="button">Bearbeiten</a>
                     </td>
                     <td>
-                        <form action="{{ url_for('deleteTrain', nr=z.nr) }}" method="post">
+                        <form action="{{ url_for('deleteMaintenance', wartungsNr=w.wartungsNr) }}" method="post">
                             {{ form.hidden_tag() }}
                             {{ wtf.form_errors(form, hiddens="only") }}
 

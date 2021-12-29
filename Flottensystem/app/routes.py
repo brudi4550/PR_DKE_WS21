@@ -5,9 +5,9 @@ from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, RegistrationFormZugpersonal, EmptyForm, EditProfileForm, \
     EditProfileFormZugpersonal, TriebwagenForm, PersonenwagenForm, EditTriebwagenForm, EditPersonenwagenForm, \
-    ZugForm, EditZugForm
+    ZugForm, EditZugForm, WartungForm, EditWartungForm
 from app.models import Mitarbeiter, Wartungspersonal, Zugpersonal, Administrator, Wagen, Triebwagen, Personenwagen, \
-    Zug
+    Zug, Wartung
 
 
 @app.route('/')
@@ -165,7 +165,7 @@ def editUser(mitarbeiterNr):
         if typ == 'Zugpersonal':
             form.berufsbezeichnung.data = user.berufsbezeichnung
             form.zugNr.data = user.zugNr
-    return render_template('edit_user.html', form=form, typ=typ)
+    return render_template('edit_user.html', title='User bearbeiten', form=form, typ=typ)
 
 @app.route('/User_löschen/<mitarbeiterNr>', methods=['POST'])
 @login_required
@@ -266,7 +266,7 @@ def updateWaggon():
     triebwagen = Triebwagen.query.all()
     personenwagen = Personenwagen.query.all()
     form = EmptyForm()
-    return render_template('edit_wagen_overview.html', triebwagen=triebwagen, personenwagen=personenwagen, form=form)
+    return render_template('edit_wagen_overview.html', title='Wagen bearbeiten', triebwagen=triebwagen, personenwagen=personenwagen, form=form)
 
 @app.route('/Wagen_bearbeiten/<nr>', methods=['GET', 'POST'])
 @login_required
@@ -303,7 +303,7 @@ def editWaggon(nr):
         else:
             form.sitzanzahl.data = wagen.sitzanzahl
             form.maximalgewicht.data = wagen.maximalgewicht
-    return render_template('edit_wagen.html', form=form, typ=typ)
+    return render_template('edit_wagen.html', title='Wagen bearbeiten', form=form, typ=typ)
 
 @app.route('/Wagen_löschen/<nr>', methods=['POST'])
 @login_required
@@ -338,7 +338,7 @@ def createTrain():
         db.session.commit()
         flash('Zug wurde erfolgreich erstellt!')
         return redirect(url_for('createTrain'))
-    return render_template('create_zug.html', form=form)
+    return render_template('create_zug.html', title='Zug erstellen', form=form)
 
 @app.route('/Zug_bearbeiten')
 @login_required
@@ -348,7 +348,7 @@ def updateTrain():
         return redirect(url_for('home_personal'))
     zug = Zug.query.all()
     form = EmptyForm()
-    return render_template('edit_zug_overview.html', zug=zug, form=form)
+    return render_template('edit_zug_overview.html', title='Zug bearbeiten', zug=zug, form=form)
 
 @app.route('/Zug_bearbeiten/<nr>', methods=['GET', 'POST'])
 @login_required
@@ -370,7 +370,7 @@ def editTrain(nr):
     elif request.method == 'GET':
         form.nr.data = zug.nr
         form.name.data = zug.name
-    return render_template('edit_zug.html', form=form)
+    return render_template('edit_zug.html', title='Zug bearbeiten', form=form)
 
 @app.route('/Zug_löschen/<nr>', methods=['POST'])
 @login_required
@@ -392,15 +392,105 @@ def deleteTrain(nr):
         return redirect(url_for('updateTrain'))
 
 
+@app.route('/Wartung_hinzufügen', methods=['GET', 'POST'])
+@login_required
+def addMaintenance():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um eine Wartung hinzufügen zu können!')
+        return redirect(url_for('home_personal'))
+    wartungspersonal = Wartungspersonal.query.all()
+    zug = Zug.query.all()
+    form = WartungForm()
+    #form.mitarbeiterNr.choices = [(w, w.vorname) for w in wartungspersonal]
+    form.zugNr.choices = [(z.nr, z.nr) for z in zug]
+    if form.validate_on_submit():
+        ''' Würde in diesem Ausdruck nur "get" stehen statt "getlist", so wird dann nur die erste angekreuzte Checkbox in die Variable eingefügt. Durch "getlist" wird also sichergestellt, dass eine Liste der angekreuzten Werte zurückkommt '''
+        wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
+        if wartungspersonalListe == []:
+            flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
+            return redirect(url_for('addMaintenance'))
+        wartung = Wartung(wartungsNr=form.wartungsNr.data, von=form.von.data, bis=form.bis.data, zugNr=form.zugNr.data)
+        for liste in wartungspersonalListe:
+            wartung.wartungspersonal.append(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
+            flash(liste)
+        db.session.add(wartung)
+        db.session.commit()
+        flash('Wartung wurde erfolgreich erstellt!')
+        return redirect(url_for('home_admin'))
+    return render_template('create_wartung.html', title='Wartung hinzufügen', wartungspersonal=wartungspersonal, zug=zug, form=form)
+
+@app.route('/Wartung_bearbeiten')
+@login_required
+def updateMaintenance():
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um eine Wartung bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    wartung = Wartung.query.all()
+    form = EmptyForm()
+    return render_template('edit_wartung_overview.html', title='Wartung bearbeiten', wartung=wartung, form=form)
+
+@app.route('/Wartung_bearbeiten/<wartungsNr>', methods=['GET', 'POST'])
+@login_required
+def editMaintenance(wartungsNr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um eine bestehenden Wartung bearbeiten zu können!')
+        return redirect(url_for('home_personal'))
+    wartung = Wartung.query.filter_by(wartungsNr=wartungsNr).first()
+    if wartung is None:
+        flash('Es wurde keine Wartung unter der Wartungsnummer {} gefunden!'.format(nr))
+        return redirect(url_for('updateMaintenance'))
+    form = EditWartungForm(wartung.wartungsNr)
+    form.zugNr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
+    if form.validate_on_submit():
+        wartung.nr = form.wartungsNr.data
+        wartung.von = form.von.data
+        wartung.bis = form.bis.data
+        wartung.zugNr = form.zugNr.data
+        db.session.commit()
+        flash('Änderungen wurden erfolgreich durchgeführt!')
+        return redirect(url_for('updateMaintenance'))
+    elif request.method == 'GET':
+        form.wartungsNr.data = wartung.wartungsNr
+        form.von.data = wartung.von
+        form.bis.data = wartung.bis
+        form.zugNr.data = wartung.zugNr
+    return render_template('edit_zug.html', title='Wartung bearbeiten', form=form)
+
+@app.route('/Wartung_löschen/<wartungsNr>', methods=['POST'])
+@login_required
+def deleteMaintenance(wartungsNr):
+    if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
+        flash('Sie müssen als Administrator angemeldet sein, um eine Wartung löschen zu können!')
+        return redirect(url_for('home_personal'))
+    form = EmptyForm()
+    if form.validate_on_submit():
+        wartung = Wartung.query.filter_by(wartungsNr=wartungsNr).first()
+        if wartung is None: # Wird keine Wartung gefunden, so kann diese auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
+            flash('Löschen einer nicht vorhandenen Wartung nicht möglich')
+            return redirect(url_for('updateMaintenance'))
+        db.session.delete(wartung)
+        db.session.commit()
+        flash('Löschen der Wartung mit der Wartungsnummer {} wurde erfolgreich durchgeführt'.format(wartungsNr))
+        return redirect(url_for('updateMaintenance'))
+    else:
+        return redirect(url_for('updateMaintenance'))
+
+
 @app.route('/Zugübersicht')
 @login_required
 def trainOverview():
     zug = Zug.query.order_by('name').all()
-    return render_template('zug_overview.html', zug=zug)
+    return render_template('zug_overview.html', title='Zugübersicht', zug=zug)
 
 @app.route('/Waggonübersicht')
 @login_required
 def waggonOverview():
     triebwagen = Triebwagen.query.all()
     personenwagen = Personenwagen.query.all()
-    return render_template('wagen_overview.html', triebwagen=triebwagen, personenwagen=personenwagen)
+    return render_template('wagen_overview.html', title='Waggonübersicht', triebwagen=triebwagen, personenwagen=personenwagen)
+
+@app.route('/Wartungsübersicht')
+@login_required
+def wartungOverview():
+    wartung = Wartung.query.all()
+    return render_template('wartung_overview.html', title='Wartungsübersicht', wartung=wartung)

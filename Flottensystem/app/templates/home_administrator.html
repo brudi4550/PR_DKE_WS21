@@ -8,8 +8,9 @@
     <a href="{{ url_for('updateTrain') }}">Bestehende Züge bearbeiten/löschen</a><br>
     <a href="{{ url_for('register') }}">Neuen Benutzer erstellen</a><br>
     <a href="{{ url_for('updateUser') }}">Bestehende Benutzer bearbeiten/löschen</a><br>
-    <a href="">Neue Wartung hinzufügen</a><br>
+    <a href="{{ url_for('addMaintenance') }}">Neue Wartung hinzufügen</a><br>
+    <a href="{{ url_for('updateMaintenance') }}">Bestehende Wartungen bearbeiten/löschen</a><br>
     <a href="{{ url_for('trainOverview') }}">Zugübersicht</a><br>
     <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a><br>
-    <a href="">Wartungsübersicht</a><br>
+    <a href="{{ url_for('wartungOverview') }}">Wartungsübersicht</a><br>
 {% endblock %}
