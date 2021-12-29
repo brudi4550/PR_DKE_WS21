@@ -326,8 +326,8 @@ class EditZugForm(FlaskForm):
 
 class WartungForm(FlaskForm):
     wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
-    von = DateTimeField('Von', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
-    bis = DateTimeField('Bis', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    von = DateTimeField('Von (Format: "dd.mm.YYYY HH:MM")', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
+    bis = DateTimeField('Bis (Format: "dd.mm.YYYY HH:MM")', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
     #mitarbeiterNr = SelectMultipleField('Wartungspersonal', validators=[DataRequired()])
     zugNr = SelectField('Zugnummer', validators=[DataRequired()])
     submit = SubmitField('Erstellen')

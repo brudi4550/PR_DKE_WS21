@@ -404,7 +404,19 @@ def addMaintenance():
     #form.mitarbeiterNr.choices = [(w, w.vorname) for w in wartungspersonal]
     form.zugNr.choices = [(z.nr, z.nr) for z in zug]
     if form.validate_on_submit():
-        ''' Würde in diesem Ausdruck nur "get" stehen statt "getlist", so wird dann nur die erste angekreuzte Checkbox in die Variable eingefügt. Durch "getlist" wird also sichergestellt, dass eine Liste der angekreuzten Werte zurückkommt '''
+        ''' Folgende Vorgehensweise wurde hier angewendet: Da es keine Implementierung von Checkboxen in wtforms gefunden wurde hat man einen etwas
+            "unsauberen" Weg benutzt. In der Variable "wartungspersonal", sind alle Mitarbeiter der Klasse Wartungspersonal eingespeichert. Diese
+            werden an das HTML-Dokument "create_wartung.html" übergeben, welches diese Mitarbeiter in Checkboxen (<input type="checkbox"...) ausgibt.
+            Die Werte der Checkboxen werden an die nachfolgende Variable "wartungspersonalListe" übergeben. Würde in diesem Ausdruck nur "get" stehen 
+            statt "getlist", so wird dann nur die erste angekreuzte Checkbox in die Variable eingefügt. Durch "getlist" wird also sichergestellt, dass 
+            eine Liste der angekreuzten Werte zurückkommt. Die Werte von diesen Checkboxen beinhalten die Mitarbeiternummer des jeweiligen Mitarbeiters
+            Nachfolgend werden diese Mitarbeiter durch die for-Schleife in die Assoziationstablle eingefügt bzw. werden diese Mitarbeiter der Variable
+            "wartungspersonal" von der Klasse "Wartung" (welche durch ein backref Argument in der Klasse Wartungspersonal definiert wurde) zugeteilt.
+            Durch diese Vorgehensweise sind jedoch auch die Nachteile erstichtlich: Die Vorteile von wtforms entfallen, also muss separat ein Error 
+            ausgegeben werden, welches in der nachfolgenden Abfrage gemacht wird. Dort wird kontrolliert, ob die übergebene Liste Leer ist, also keine
+            einzige Checkbox angekreuzt wurde. Dies wird dann dem User mitgeteilt. Ein weiterer Nachteil ist, dass diese Checkboxansicht zu unübersichtlich
+            sein kann. Hat man bspw. viele (z.B. 100) Wartungspersonalmitarbeiter, dann wäre die Checkboxliste sehr lang, was zur Unübersichtlichkeit
+            führen würde'''
         wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
         if wartungspersonalListe == []:
             flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
@@ -412,7 +424,6 @@ def addMaintenance():
         wartung = Wartung(wartungsNr=form.wartungsNr.data, von=form.von.data, bis=form.bis.data, zugNr=form.zugNr.data)
         for liste in wartungspersonalListe:
             wartung.wartungspersonal.append(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
-            flash(liste)
         db.session.add(wartung)
         db.session.commit()
         flash('Wartung wurde erfolgreich erstellt!')

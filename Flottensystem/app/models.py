@@ -127,6 +127,11 @@ class Wartung(db.Model):
     bis = db.Column(db.DateTime, index=True, nullable=False)
     zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
 
+    def zugeordnetes_wartungspersonal(self):
+        return Wartungspersonal.query.join(
+            ist_zugeteilt, (ist_zugeteilt.c.wartungspersonal_id == Wartungspersonal.mitarbeiterNr)).filter(
+            ist_zugeteilt.c.wartung_id == self.wartungsNr)
+
     def __repr__(self):
         return '<Wartungsnummer: {}>'.format(self.wartungsNr)
 
