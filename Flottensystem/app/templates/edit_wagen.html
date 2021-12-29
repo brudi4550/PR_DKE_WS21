@@ -2,7 +2,11 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h2>Login</h2>
+    {% if typ == 'Triebwagen' %}
+    <h2>Triebwagen bearbeiten</h2>
+    {% else %}
+    <h2>Personenwagen bearbeiten</h2>
+    {% endif %}<br>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if triebwagen == [] and personenwagen == [] %}
+        <p>Es sind keine Waggons verfügbar!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% else %}
+        <h3>Waggonübersicht:</h3><br>
+        {% if triebwagen != [] %}
+            <h4>Triebwaggons:</h4>
+            <table class="table table-hover">
+                <tr>
+                    <th>Wagennummer</th>
+                    <th>Spurweite [mm]</th>
+                    <th>Maximale Zugkraft [Tonnen]</th>
+                </tr>
+                {% for t in triebwagen %}
+                    <tr>
+                        <td>{{ t.nr }}</td>
+                        <td>{{ t.spurweite }}</td>
+                        <td>{{ t.maxZugkraft }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}<br>
+        {% if personenwagen != [] %}
+            <h4>Personenwaggons:</h4>
+            <table class="table table-hover">
+                <tr>
+                    <th>Wagennummer</th>
+                    <th>Spurweite [mm]</th>
+                    <th>Sitzanzahl</th>
+                    <th>Maximalgewicht [Tonnen]</th>
+                </tr>
+                {% for p in personenwagen %}
+                    <tr>
+                        <td>{{ p.nr }}</td>
+                        <td>{{ p.spurweite }}</td>
+                        <td>{{ p.sitzanzahl }}</td>
+                        <td>{{ p.maximalgewicht }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endif %}
+{% endblock %}

@@ -6,6 +6,6 @@
             {{ wtf.form_field(form.vorname) }}
             {{ wtf.form_field(form.nachname) }}
             {% if typ == 'Zugpersonal' %}
-            {{ form.berufsbezeichnung }}
+            {{ wtf.form_field(form.berufsbezeichnung) }}
             {% endif %}
             {{ wtf.form_field(form.email) }}

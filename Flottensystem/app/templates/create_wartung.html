@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if wartungspersonal == [] and zug == [] %}
+        <p>Es kann keine Wartung erstellt werden, da weder Züge, noch Wartungspersonal vorhanden ist!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% elif wartungspersonal == [] %}
+        <p>Um eine Wartung hinzufügen zu können, muss Wartungspersonal vorhanden sein!
+            <a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Hier</a>
+            können Sie einen neuen Wartungsmitarbeiter erstellen.
+        </p>
+    {% elif zug == [] %}
+        <p>Um eine Wartung hinzufügen zu können, muss ein Zug vorhanden sein!
+            <a href="{{ url_for('createTrain') }}">Hier</a> können Sie einen Zug erstellen.
+        </p>
+    {% else %}
+        <h2>Neue Wartung hinzufügen:</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <form action="" method="post">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form, hiddens="only") }}
+
+                    {{ wtf.form_field(form.wartungsNr) }}
+                    {{ wtf.form_field(form.von) }}
+                    {{ wtf.form_field(form.bis) }}
+    {#                <!--{{ wtf.form_field(form.mitarbeiterNr) }} -->#}
+                    <b>Wartungspersonal</b>
+                    {% for w in wartungspersonal %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" value="{{ w.mitarbeiterNr }}" name="WartungspersonalCheckbox">
+                            {{ w.vorname }} {{ w.nachname }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                    {{ wtf.form_field(form.zugNr) }}
+                    {{ wtf.form_field(form.submit) }}
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

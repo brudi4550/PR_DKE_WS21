@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if wartung == [] %}
+        <p>Es sind keine Wartungen verfügbar!</p>
+        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+    {% else %}
+        <h3>Wartungsübersicht:</h3><br>
+        <table class="table table-hover">
+            <tr>
+                <th>Wartungsnummer</th>
+                <th>Von</th>
+                <th>Bis</th>
+                <th>Zugeteiltes Personal</th>
+                <th>Zugnummer</th>
+            </tr>
+            {% for w in wartung %}
+                <tr>
+                    <td>{{ w.wartungsNr }}</td>
+                    <td>{{ w.von.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ w.bis.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>
+                        {% for p in w.zugeordnetes_wartungspersonal().all() %}
+                            <ul class="list-unstyled">
+                                <li>{{ p.vorname }} {{ p.nachname }} ({{ p.mitarbeiterNr }})</li>
+                            </ul>
+                        {% endfor %}
+                    </td>
+                    <td>{{ w.zugNr }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

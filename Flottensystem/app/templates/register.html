@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <h2>Neuen Benutzer erstellen:</h1>
-    <h4>Wählen Sie die Art des Benutzers</h3>
+    <h2>Neuen Benutzer erstellen:</h2>
+    <h4>Wählen Sie die Art des Benutzers</h4>
     <a href="{{ url_for('registerUser', name='Administrator') }}">Administrator</a><br><br>
     <a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Wartungspersonal</a><br><br>
     <a href="{{ url_for('registerUser', name='Zugpersonal') }}">Zugpersonal</a>

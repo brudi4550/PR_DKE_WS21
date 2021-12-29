@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if typ == 'Triebwagen' %}
+        <h2>Neuen Triebwagen erstellen:</h2>
+    {% elif typ == 'Personenwagen' %}
+        <h2>Neuen Personenwagen erstellen:</h2>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form)}}
+        </div>
+    </div>
+{% endblock %}
