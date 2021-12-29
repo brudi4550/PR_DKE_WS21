@@ -29,9 +29,15 @@ oder<br>
 ./run.sh st ti fl <br>
 
 <br>
+Admin-Login für lokales Fahrplansystem:<br>
+Mitarbeiter-ID: 1<br>
+Passwort: 1234<br>
+
+<br>
+Bis Februar 2022 ist das Fahrplansystem auch auf diesem VPS deployed:<br>
+52.29.120.183
+
+<br>
 Technologie-Stack:<br>
 Flask, Python, Jinja, SQLite<br>
-<br>
-Admin-Login für Fahrplansystem:<br>
-Mitarbeiter-ID: 1<br>
-Passwort: 1234
+
