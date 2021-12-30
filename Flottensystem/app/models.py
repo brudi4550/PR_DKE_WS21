@@ -10,8 +10,8 @@ from sqlalchemy.orm import configure_mappers
 ''' Da zwischen Wartungspersonal und Wartung eine "* zu *" Assoziation besteht, wird nachfolgend eine Hilfstabelle
     definiert, welches die Primärschlüssel der Klassen enthält, die durch die Assoziation verknüpft sind '''
 ist_zugeteilt = db.Table('ist_zugeteilt',
-                         db.Column('wartungspersonal_id', db.Integer, db.ForeignKey('wartungspersonal.mitarbeiterNr')),
-                         db.Column('wartung_id', db.Integer, db.ForeignKey('wartung.wartungsNr'))
+                         db.Column('wartungspersonal_id', db.Integer, db.ForeignKey('wartungspersonal.mitarbeiterNr', onupdate='CASCADE', ondelete='CASCADE')),
+                         db.Column('wartung_id', db.Integer, db.ForeignKey('wartung.wartungsNr', onupdate='CASCADE', ondelete='CASCADE'))
 )
 
 
@@ -26,7 +26,7 @@ class Zug(db.Model):
         kann. Durch "lazy" wird definiert, wie die Datenbankabfrage ausgeführt wird. Hier wird mit dynamic festgelegt, 
         dass die Abrage erst dann ausgeführt wird, wenn diese angefordert wird. '''
     zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
-    wartung = db.relationship('Wartung', backref='zug', lazy='dynamic')
+    wartung = db.relationship('Wartung', backref='zug', lazy='dynamic', cascade='all, delete')
 
     def __repr__(self):
         return '<Zugnummer: {}>'.format(self.nr)
@@ -73,7 +73,7 @@ class Wartungspersonal(Mitarbeiter):
         angefordert wird. '''
     wartungen = db.relationship(
         'Wartung', secondary=ist_zugeteilt,
-        backref=db.backref('wartungspersonal', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('wartungspersonal', lazy='dynamic'), lazy='dynamic', cascade='all, delete')
     
     __mapper_args__ = { 'polymorphic_identity':'wartungspersonal', 'concrete':True}
     
@@ -125,12 +125,44 @@ class Wartung(db.Model):
     wartungsNr = db.Column(db.Integer, primary_key=True)
     von = db.Column(db.DateTime, index=True, nullable=False)
     bis = db.Column(db.DateTime, index=True, nullable=False)
-    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
 
+    ''' In der folgenden Methode werden die Mitarbeiter der Klasse "Wartungspersonal" zurückgegeben, die sich in 
+        der Assoziationstabelle der jeweiligen Wartung befinden (die also eine Wartung eines bestimmten Zuges
+        durchführen). Dabei wird im ersten Ausdruck ein Join durchgeführt, d.h., dass die Tabelle "Wartungspersonal"
+        mit der Assoziationstabelle "ist_zugeteilt" gejoint wird. Also entfallen hier schon alle Wartungspersonal-
+        instanzen, die noch keine Wartung durchgeführt haben bzw. sich nicht in der Assoziationstabelle befinden.
+        Als nächstes wird durch den Ausdruck "filter" alle Instanzen rausgefiltert, die nicht der jeweiligen
+        Wartungsnummer zugehören. Es werden also durch den "filter" Ausdruck nur jene Instanzen aus der Assoziations-
+        tabelle geholt, die auch zu der jeweiligen Wartung gehören. '''
     def zugeordnetes_wartungspersonal(self):
         return Wartungspersonal.query.join(
             ist_zugeteilt, (ist_zugeteilt.c.wartungspersonal_id == Wartungspersonal.mitarbeiterNr)).filter(
             ist_zugeteilt.c.wartung_id == self.wartungsNr)
+
+    ''' In dieser Methode wird überprüft, ob der übergebene Mitarbeiter in der jeweiligen Wartung eingeteilt ist.
+        Durch "self.wartungspersonal" wird auf die Assoziationstabelle der jeweiligen Wartung zugegriffen. Mit
+        "filter" wird in dieser Assoziationstabelle abgefragt, ob der jeweilige Mitarbeiter dort vorhanden ist.
+        Durch "count()" wird gezählt, wie oft dieser Mitarbeiter in der Assoziationstabelle der jeweiligen 
+        Wartung vorhanden ist, welches maximal den Wert 1 annehmen kann (da ein Mitarbeiter in einer jeweiligen
+        Wartung nur einmal und nicht öfters vorkommt), also wäre der Ausdruck "count() == 1" genauso richtig gewesen '''
+    def ist_zugeordnet(self, personal):
+        return self.wartungspersonal.filter(ist_zugeteilt.c.wartungspersonal_id == personal.mitarbeiterNr)\
+                   .count() > 0
+
+    ''' In der folgenden Methode wird ein Wartungspersonal in die Assoziationstabelle der jeweiligen Wartung hinzugefügt. 
+        Damit dieser nicht öfters in die Assoziationstabelle hinzugefügt wird, wird durch ein Aufruf der Methode 
+        "ist_zugeordnet" überprüft, ob dieser Mitarbeiter sich schon in dieser Tabelle befindet '''
+    def wartungspersonal_hinzufuegen(self, personal):
+        if not self.ist_zugeordnet(personal):
+            self.wartungspersonal.append(personal)
+
+    ''' Im Unterschied zur vorherigen Methode wird in der folgenden ein Wartungspersonal entfernt. Damit dieser entfernt
+        werden kann, wird überprüft (durch Aufruf der Methode "ist_zugeordnet"), ob sich dieser überhaupt in der 
+        Assoziationstabelle befindet '''
+    def wartungspersonal_entfernen(self, personal):
+        if self.ist_zugeordnet(personal):
+            self.wartungspersonal.remove(personal)
 
     def __repr__(self):
         return '<Wartungsnummer: {}>'.format(self.wartungsNr)

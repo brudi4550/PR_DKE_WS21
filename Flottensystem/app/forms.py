@@ -17,7 +17,8 @@ class LoginForm(FlaskForm):
     angemeldet_bleiben = BooleanField('Angemeldet bleiben')
     submit = SubmitField('Anmelden')
     
-    
+
+
 class RegistrationForm(FlaskForm):
     ''' In der nachfolgenden Zeile wird die Länge der Mitarbeiternummer bestimmt. Diese muss 8 Zeichen lang sein, was durch
         min und max im Validator "Length()" sichergestellt wird '''
@@ -201,6 +202,7 @@ class EditProfileFormZugpersonal(FlaskForm):
                 raise ValidationError('Diese Email ist bereits vergeben! Bitte geben sie eine andere Email ein.')
 
 
+
 class TriebwagenForm(FlaskForm):
     nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
     spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
@@ -299,6 +301,8 @@ class EditPersonenwagenForm(FlaskForm):
             if not character.isdigit():
                 raise ValidationError('Das Maximalgewicht darf nur aus Ziffern bestehen!')
 
+
+
 class ZugForm(FlaskForm):
     nr = StringField('Zugnummer', validators=[DataRequired()])
     name = StringField('Zugname', validators=[DataRequired()])
@@ -324,19 +328,38 @@ class EditZugForm(FlaskForm):
             if zug is not None:
                 raise ValidationError('Diese Zugnummer ist bereits vergeben! Bitte geben sie eine andere Zugnummer ein.')
 
+
+
 class WartungForm(FlaskForm):
     wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
+    ''' In der nachfolgenden Zeile wird durch "format" angegeben, in welchem Format das Datum und die Uhrzeit 
+        eingegeben werden müssen '''
     von = DateTimeField('Von (Format: "dd.mm.YYYY HH:MM")', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
     bis = DateTimeField('Bis (Format: "dd.mm.YYYY HH:MM")', format='%d.%m.%Y %H:%M', validators=[DataRequired()])
     #mitarbeiterNr = SelectMultipleField('Wartungspersonal', validators=[DataRequired()])
     zugNr = SelectField('Zugnummer', validators=[DataRequired()])
     submit = SubmitField('Erstellen')
 
-    def validate_nr(self, wartungsNr):
+    def validate_wartungsNr(self, wartungsNr):
         for character in wartungsNr.data:
             if not character.isdigit():
                 raise ValidationError('Die Wartungsnummer darf nur aus Ziffern bestehen!')
+        wartung = Wartung.query.filter_by(wartungsNr=wartungsNr.data).first()
+        if wartung is not None:
+            raise ValidationError('Diese Wartungsnummer ist bereits vergeben! Bitte geben sie eine andere Wartungsnummer ein.')
 
+    ''' Hier wird überprüft, ob der Beginnzeitpunkt der Wartung nach dem Endzeitpunkt der Wartung erfolgt. Ist diese
+        Abfrage True, so wird ein Fehler ausgegeben '''
+    def validate_von(self, von):
+        if von.data > self.bis.data:
+            raise ValidationError('Der Beginn einer Wartung kann nicht nach dem Ende dieser erfolgen!')
+
+    ''' Hierbei handelt es sich um eine ähnliche Abfrage wie in "validate_von", nur dass hier überprüft wird,
+        ob der Endzeitpunkt der Wartung vor dem Beginnzeitpunkt der Wartung erfolgt. Auch hier wird ein Fehler
+        ausgegeben, falls die Abfrage True ist '''
+    def validate_bis(self, bis):
+        if bis.data < self.von.data:
+            raise ValidationError('Das Ende der Wartung muss nach dem Beginn dieser erfolgen!')
 
 class EditWartungForm(FlaskForm):
     wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
@@ -349,7 +372,7 @@ class EditWartungForm(FlaskForm):
         super(EditWartungForm, self).__init__(*args, **kwargs)
         self.original_nr = original_nr
 
-    def validate_nr(self, wartungsNr):
+    def validate_wartungsNr(self, wartungsNr):
         for character in wartungsNr.data:
             if not character.isdigit():
                 raise ValidationError('Die Wartungsnummer darf nur aus Ziffern bestehen!')
@@ -357,3 +380,11 @@ class EditWartungForm(FlaskForm):
             wartung = Wartung.query.filter_by(wartungsNr=wartungsNr.data).first()
             if wartung is not None:
                 raise ValidationError('Diese Wartungsnummer ist bereits vergeben! Bitte geben sie eine andere Wartungsnummer ein.')
+
+    def validate_von(self, von):
+        if von.data > self.bis.data:
+            raise ValidationError('Der Beginn einer Wartung kann nicht nach dem Ende dieser erfolgen!')
+
+    def validate_bis(self, bis):
+        if bis.data < self.von.data:
+            raise ValidationError('Das Ende der Wartung muss nach dem Beginn dieser erfolgen!')

@@ -398,35 +398,40 @@ def addMaintenance():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um eine Wartung hinzufügen zu können!')
         return redirect(url_for('home_personal'))
+
     wartungspersonal = Wartungspersonal.query.all()
     zug = Zug.query.all()
     form = WartungForm()
     #form.mitarbeiterNr.choices = [(w, w.vorname) for w in wartungspersonal]
     form.zugNr.choices = [(z.nr, z.nr) for z in zug]
+
     if form.validate_on_submit():
         ''' Folgende Vorgehensweise wurde hier angewendet: Da es keine Implementierung von Checkboxen in wtforms gefunden wurde hat man einen etwas
             "unsauberen" Weg benutzt. In der Variable "wartungspersonal", sind alle Mitarbeiter der Klasse Wartungspersonal eingespeichert. Diese
             werden an das HTML-Dokument "create_wartung.html" übergeben, welches diese Mitarbeiter in Checkboxen (<input type="checkbox"...) ausgibt.
             Die Werte der Checkboxen werden an die nachfolgende Variable "wartungspersonalListe" übergeben. Würde in diesem Ausdruck nur "get" stehen 
             statt "getlist", so wird dann nur die erste angekreuzte Checkbox in die Variable eingefügt. Durch "getlist" wird also sichergestellt, dass 
-            eine Liste der angekreuzten Werte zurückkommt. Die Werte von diesen Checkboxen beinhalten die Mitarbeiternummer des jeweiligen Mitarbeiters
-            Nachfolgend werden diese Mitarbeiter durch die for-Schleife in die Assoziationstablle eingefügt bzw. werden diese Mitarbeiter der Variable
-            "wartungspersonal" von der Klasse "Wartung" (welche durch ein backref Argument in der Klasse Wartungspersonal definiert wurde) zugeteilt.
-            Durch diese Vorgehensweise sind jedoch auch die Nachteile erstichtlich: Die Vorteile von wtforms entfallen, also muss separat ein Error 
-            ausgegeben werden, welches in der nachfolgenden Abfrage gemacht wird. Dort wird kontrolliert, ob die übergebene Liste Leer ist, also keine
-            einzige Checkbox angekreuzt wurde. Dies wird dann dem User mitgeteilt. Ein weiterer Nachteil ist, dass diese Checkboxansicht zu unübersichtlich
-            sein kann. Hat man bspw. viele (z.B. 100) Wartungspersonalmitarbeiter, dann wäre die Checkboxliste sehr lang, was zur Unübersichtlichkeit
-            führen würde'''
+            eine Liste der angekreuzten Werte zurückkommt. Die Werte von diesen Checkboxen beinhalten die Mitarbeiternummer des jeweiligen Mitarbeiters.
+            Nachfolgend werden diese Mitarbeiter durch die for-Schleife in die Assoziationstablle eingefügt (indem auf die Methode "wartungspersonal_hinzufügen"
+            zugegriffen wird) bzw. werden diese Mitarbeiter der Variable "wartungspersonal" von der Klasse "Wartung" (welche durch ein backref Argument in der 
+            Klasse Wartungspersonal definiert wurde) zugeteilt. Durch diese Vorgehensweise sind jedoch auch die Nachteile erstichtlich: Die Vorteile von wtforms
+            entfallen, also muss separat ein Error ausgegeben werden, welches in der nachfolgenden Abfrage gemacht wird. Dort wird kontrolliert, ob die übergebene
+            Liste Leer ist, also keine einzige Checkbox angekreuzt wurde. Dies wird dann dem User mitgeteilt. Ein weiterer Nachteil ist, dass diese Checkboxansicht
+            zu unübersichtlich sein kann. Hat man bspw. viele (z.B. 100) Wartungspersonalmitarbeiter, dann wäre die Checkboxliste sehr lang, was zur 
+            Unübersichtlichkeit führen würde'''
         wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
         if wartungspersonalListe == []:
             flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
             return redirect(url_for('addMaintenance'))
         wartung = Wartung(wartungsNr=form.wartungsNr.data, von=form.von.data, bis=form.bis.data, zugNr=form.zugNr.data)
-        for liste in wartungspersonalListe:
-            wartung.wartungspersonal.append(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
         db.session.add(wartung)
+
+
+        for liste in wartungspersonalListe:
+            wartung.wartungspersonal_hinzufuegen(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
+
         db.session.commit()
-        flash('Wartung wurde erfolgreich erstellt!')
+        flash('Die Wartung mit der Wartungsnummer {} wurde erfolgreich erstellt!'.format(wartung.wartungsNr))
         return redirect(url_for('home_admin'))
     return render_template('create_wartung.html', title='Wartung hinzufügen', wartungspersonal=wartungspersonal, zug=zug, form=form)
 
@@ -440,6 +445,9 @@ def updateMaintenance():
     form = EmptyForm()
     return render_template('edit_wartung_overview.html', title='Wartung bearbeiten', wartung=wartung, form=form)
 
+
+''' In dieser View Function werden nur Änderungen dokumentiert. Für weitere Dokumentation des Codes in dieser View
+    Function, siehe "addMaintenance()" '''
 @app.route('/Wartung_bearbeiten/<wartungsNr>', methods=['GET', 'POST'])
 @login_required
 def editMaintenance(wartungsNr):
@@ -448,24 +456,41 @@ def editMaintenance(wartungsNr):
         return redirect(url_for('home_personal'))
     wartung = Wartung.query.filter_by(wartungsNr=wartungsNr).first()
     if wartung is None:
-        flash('Es wurde keine Wartung unter der Wartungsnummer {} gefunden!'.format(nr))
+        flash('Es wurde keine Wartung unter der Wartungsnummer {} gefunden!'.format(wartungsNr))
         return redirect(url_for('updateMaintenance'))
+
+    wartungspersonal = Wartungspersonal.query.all()
     form = EditWartungForm(wartung.wartungsNr)
     form.zugNr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
+
     if form.validate_on_submit():
+        wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
+        if wartungspersonalListe == []:
+            flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
+            return redirect(url_for('editMaintenance', wartungsNr=wartungsNr))
         wartung.nr = form.wartungsNr.data
         wartung.von = form.von.data
         wartung.bis = form.bis.data
+        personal = wartung.zugeordnetes_wartungspersonal().all()
+        for p in personal:
+            for liste in wartungspersonalListe:
+                if p.mitarbeiterNr == liste:
+                    continue
+                wartung.wartungspersonal_entfernen(p)
+        for liste in wartungspersonalListe:
+            wartung.wartungspersonal_hinzufuegen(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
         wartung.zugNr = form.zugNr.data
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateMaintenance'))
+
     elif request.method == 'GET':
         form.wartungsNr.data = wartung.wartungsNr
         form.von.data = wartung.von
         form.bis.data = wartung.bis
         form.zugNr.data = wartung.zugNr
-    return render_template('edit_zug.html', title='Wartung bearbeiten', form=form)
+
+    return render_template('edit_wartung.html', title='Wartung bearbeiten', wartung=wartung, wartungspersonal=wartungspersonal, form=form)
 
 @app.route('/Wartung_löschen/<wartungsNr>', methods=['POST'])
 @login_required
