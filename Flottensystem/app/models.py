@@ -27,6 +27,8 @@ class Zug(db.Model):
         dass die Abrage erst dann ausgeführt wird, wenn diese angefordert wird. '''
     zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
     wartung = db.relationship('Wartung', backref='zug', lazy='dynamic', cascade='all, delete')
+    triebwagen = db.relationship('Triebwagen', backref='zug', lazy='dynamic')
+    personenwagen = db.relationship('Personenwagen', backref='zug', lazy='dynamic')
 
     def __repr__(self):
         return '<Zugnummer: {}>'.format(self.nr)
@@ -83,7 +85,7 @@ class Wartungspersonal(Mitarbeiter):
 class Zugpersonal(Mitarbeiter):
     __tablename__ = 'zugpersonal'
     berufsbezeichnung = db.Column(db.String(255), nullable=False)
-    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'), nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr'))
     
     __mapper_args__ = { 'polymorphic_identity':'zugpersonal', 'concrete':True}
     
@@ -109,6 +111,7 @@ class Wagen(db.Model, AbstractConcreteBase):
 class Triebwagen(Wagen):
     __tablename__ = 'triebwagen'
     maxZugkraft = db.Column(db.Integer, nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'))
     
     __mapper_args__ = { 'polymorphic_identity':'triebwagen', 'concrete':True}
     
@@ -117,6 +120,7 @@ class Personenwagen(Wagen):
     __tablename__ = 'personenwagen'
     sitzanzahl = db.Column(db.Integer, nullable=False)
     maximalgewicht = db.Column(db.Integer, nullable=False)
+    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'))
     
     __mapper_args__ = { 'polymorphic_identity':'personenwagen', 'concrete':True}
         
