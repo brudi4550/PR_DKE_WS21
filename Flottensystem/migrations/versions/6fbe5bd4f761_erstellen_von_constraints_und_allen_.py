@@ -1,8 +1,8 @@
 """Erstellen von Constraints und allen Klassen
 
-Revision ID: 7407ef04ee4e
+Revision ID: 6fbe5bd4f761
 Revises: 
-Create Date: 2021-12-30 20:11:54.851965
+Create Date: 2021-12-30 23:23:07.121162
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7407ef04ee4e'
+revision = '6fbe5bd4f761'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -44,6 +44,15 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_mitarbeiter_email'), ['email'], unique=True)
         batch_op.create_index(batch_op.f('ix_mitarbeiter_svnr'), ['svnr'], unique=True)
 
+    op.create_table('triebwagen',
+    sa.Column('nr', sa.Integer(), nullable=False),
+    sa.Column('spurweite', sa.Integer(), nullable=False),
+    sa.Column('maxZugkraft', sa.Integer(), nullable=False),
+    sa.PrimaryKeyConstraint('nr', name=op.f('pk_triebwagen'))
+    )
+    with op.batch_alter_table('triebwagen', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_triebwagen_spurweite'), ['spurweite'], unique=False)
+
     op.create_table('wagen',
     sa.Column('nr', sa.Integer(), nullable=False),
     sa.Column('spurweite', sa.Integer(), nullable=False),
@@ -68,6 +77,8 @@ def upgrade():
     op.create_table('zug',
     sa.Column('nr', sa.String(length=255), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
+    sa.Column('triebwagen_nr', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['triebwagen_nr'], ['triebwagen.nr'], name=op.f('fk_zug_triebwagen_nr_triebwagen'), onupdate='CASCADE'),
     sa.PrimaryKeyConstraint('nr', name=op.f('pk_zug'))
     )
     op.create_table('personenwagen',
@@ -81,17 +92,6 @@ def upgrade():
     )
     with op.batch_alter_table('personenwagen', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_personenwagen_spurweite'), ['spurweite'], unique=False)
-
-    op.create_table('triebwagen',
-    sa.Column('nr', sa.Integer(), nullable=False),
-    sa.Column('spurweite', sa.Integer(), nullable=False),
-    sa.Column('maxZugkraft', sa.Integer(), nullable=False),
-    sa.Column('zugNr', sa.String(length=255), nullable=True),
-    sa.ForeignKeyConstraint(['zugNr'], ['zug.nr'], name=op.f('fk_triebwagen_zugNr_zug'), onupdate='CASCADE', ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('nr', name=op.f('pk_triebwagen'))
-    )
-    with op.batch_alter_table('triebwagen', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_triebwagen_spurweite'), ['spurweite'], unique=False)
 
     op.create_table('wartung',
     sa.Column('wartungsNr', sa.Integer(), nullable=False),
@@ -143,10 +143,6 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_wartung_bis'))
 
     op.drop_table('wartung')
-    with op.batch_alter_table('triebwagen', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_triebwagen_spurweite'))
-
-    op.drop_table('triebwagen')
     with op.batch_alter_table('personenwagen', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_personenwagen_spurweite'))
 
@@ -161,6 +157,10 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_wagen_spurweite'))
 
     op.drop_table('wagen')
+    with op.batch_alter_table('triebwagen', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_triebwagen_spurweite'))
+
+    op.drop_table('triebwagen')
     with op.batch_alter_table('mitarbeiter', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_mitarbeiter_svnr'))
         batch_op.drop_index(batch_op.f('ix_mitarbeiter_email'))

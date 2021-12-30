@@ -27,7 +27,7 @@ class Zug(db.Model):
         dass die Abrage erst dann ausgeführt wird, wenn diese angefordert wird. '''
     zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
     wartung = db.relationship('Wartung', backref='zug', lazy='dynamic', cascade='all, delete')
-    triebwagen = db.relationship('Triebwagen', backref='zug', lazy='dynamic')
+    triebwagen_nr = db.Column(db.Integer, db.ForeignKey('triebwagen.nr', onupdate='CASCADE'), nullable=False)
     personenwagen = db.relationship('Personenwagen', backref='zug', lazy='dynamic')
 
     def __repr__(self):
@@ -111,7 +111,7 @@ class Wagen(db.Model, AbstractConcreteBase):
 class Triebwagen(Wagen):
     __tablename__ = 'triebwagen'
     maxZugkraft = db.Column(db.Integer, nullable=False)
-    zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'))
+    zug = db.relationship('Zug', backref='triebwagen', uselist=False, cascade='all, delete-orphan')
     
     __mapper_args__ = { 'polymorphic_identity':'triebwagen', 'concrete':True}
     
