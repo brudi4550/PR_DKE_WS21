@@ -23,6 +23,7 @@ def get_train_choices(form):
         train_choices.append((value_and_label, value_and_label))
     form.train_choice.choices = train_choices
 
+
 # TODO make api only accessible with API key?
 @app.route('/get_routes')
 def get_routes():

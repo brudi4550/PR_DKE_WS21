@@ -29,16 +29,16 @@
                         {% with trip_count=tour.trip_count() %}
                         {% if trip_count > 0 %}
                             {% with next_trip=tour.next_trip() %}
-                            Nächste Durchführung:<br>
-                            {{ next_trip.date.strftime('%d.%m.%Y')}}
-                            {{ next_trip.time.strftime('%H:%M:%S')}}<br/>
-                                {% if trip_count > 1 %}
-                                    {% if trip_count == 2 %}
-                                        <p>{{ trip_count-1 }} weitere Durchführung</p>
-                                    {% else %}
-                                        <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                                Nächste Durchführung:<br>
+                                {{ next_trip.date.strftime('%d.%m.%Y')}}
+                                {{ next_trip.time.strftime('%H:%M:%S')}}<br/>
+                                    {% if trip_count > 1 %}
+                                        {% if trip_count == 2 %}
+                                            <p>{{ trip_count-1 }} weitere Durchführung</p>
+                                        {% else %}
+                                            <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                                        {% endif %}
                                     {% endif %}
-                                {% endif %}
                             {% endwith %}
                         {% else %}
                             <p>Keine Durchführungen eingetragen</p>

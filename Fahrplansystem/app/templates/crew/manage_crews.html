@@ -2,59 +2,89 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div id="deleteCrewFailed" class="alert alert-info hidden">Bordpersonalteam konnte nicht gelöscht werden.</div>
-    <h1>Bordpersonalteams verwalten</h1>
-    <div class="col-md-12">
-        <table class="table table-hover">
-            <tr>
-                <th>Bordpersonalteam ID</th>
-                <th>Mitarbeiter in diesem Team</th>
-                <th class="text-center">Bordpersonalteam löschen</th>
-            </tr>
-            {% for crew in crews %}
-                <tr class="crew" crew_id="{{ crew.id }}">
-                    <td>{{ crew.id }}</td>
-                    {% with employees=crews.filter_by(id=crew.id).first().employees.all() %}
-                    {% if employees|length > 0 %}
-                    <td>
-                        <table class="table table-hover">
-                            <tr>
-                                <th>ID</th>
-                                <th>Vorname</th>
-                                <th>Nachname</th>
-                                <th>SVN</th>
-                                <th>Funktion</th>
-                            </tr>
-                            {% for employee in employees %}
-                                <tr>
-                                    <td>{{ employee.id }}</td>
-                                    <td>{{ employee.first_name }}</td>
-                                    <td>{{ employee.last_name }}</td>
-                                    <td>{{ employee.ssn }}</td>
-                                    <td>{{ employee.employee_type }}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </td>
-                    {% else %}
-                    <td>
-                        <p>Keine Mitarbeiter in diesem Bordpersonalteam</p>
-                    </td>
-                    {% endif %}
-                    {% endwith %}
-                    <td class="text-center">
-                        <button class="delete_crew" crew_id="{{ crew.id }}">
-                            <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
-                        </button>
-                    </td>
+<div id="deleteCrewFailed" class="alert alert-info hidden">Bordpersonalteam konnte nicht gelöscht werden.</div>
+<h1>Bordpersonalteams verwalten</h1>
+<div class="col-md-12">
+    <table class="table table-hover">
+        <tr>
+            <th>Bordpersonalteam ID</th>
+            <th>Mitarbeiter in diesem Team</th>
+            <th class="text-center">Bordpersonalteam löschen</th>
+        </tr>
+        {% for crew in crews %}
+        <tr class="crew" crew_id="{{ crew.id }}">
+            <td>{{ crew.id }}</td>
+            {% with employees=crews.filter_by(id=crew.id).first().employees.all() %}
+            {% if employees|length > 0 %}
+            <td>
+                <table class="table table-hover">
+                    <tr>
+                        <th>ID</th>
+                        <th>Vorname</th>
+                        <th>Nachname</th>
+                        <th>SVN</th>
+                        <th>Funktion</th>
+                    </tr>
+                    {% for employee in employees %}
+                    <tr draggable="true" ondragstart="drag_employee(event)" employee_id="{{ employee.id }}">
+                        <td>{{ employee.id }}</td>
+                        <td>{{ employee.first_name }}</td>
+                        <td>{{ employee.last_name }}</td>
+                        <td>{{ employee.ssn }}</td>
+                        <td>{{ employee.employee_type }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <button class="target btn btn-primary" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
+                   <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
+                </button>
+            </td>
+            {% else %}
+            <td>
+                <p>Keine Mitarbeiter in diesem Bordpersonalteam</p>
+                <button class="target btn btn-primary" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
+                    <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
+                </button>
+            </td>
+            {% endif %}
+            {% endwith %}
+            <td class="text-center">
+                <button class="delete_crew" crew_id="{{ crew.id }}">
+                    <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <form method="post" action="/add_empty_crew">
+        <button type="submit" class="btn btn-primary">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Leeres Bordpersonalteam hinzufügen
+        </button>
+    </form>
+    <hr>
+    <div class="panel panel-default">
+        <div class="panel-heading"><b>Mitarbeiter welche noch keinem Bordpersonalteam zugeteilt wurden</b></div>
+        <div class="panel-body">
+            <table class="table table-hover">
+                <tr>
+                    <th>ID</th>
+                    <th>Vorname</th>
+                    <th>Nachname</th>
+                    <th>SVN</th>
+                    <th>Funktion</th>
                 </tr>
-            {% endfor %}
-        </table>
-        <form method="post" action="/add_empty_crew">
-            <button type="submit" class="btn btn-primary">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                Leeres Bordpersonalteam hinzufügen
-            </button>
-        </form>
+                {% for employee in employees_in_no_crew %}
+                <tr draggable="true" ondragstart="drag_employee(event)" employee_id="{{ employee.id }}">
+                    <td employee_id="{{ employee.id }}">{{ employee.id }}</td>
+                    <td>{{ employee.first_name }}</td>
+                    <td>{{ employee.last_name }}</td>
+                    <td>{{ employee.ssn }}</td>
+                    <td>{{ employee.employee_type }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
+</div>
 {% endblock %}

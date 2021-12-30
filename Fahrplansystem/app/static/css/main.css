@@ -6,6 +6,15 @@
     display: none;
 }
 
+.align-center {
+    display: flex;
+    align-items: center;
+}
+
+[draggable=true] {
+  cursor: move;
+}
+
 .red {
     color: red;
 }
