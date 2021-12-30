@@ -1,8 +1,8 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
 from app import app, admin_required, db
-from app.models import Crew
+from app.models import Crew, Employee
 from app.routes.general import append_activity
 
 
@@ -11,7 +11,11 @@ from app.routes.general import append_activity
 @admin_required
 def manage_crews():
     crews = Crew.query.order_by(Crew.id.asc())
-    return render_template('crew/manage_crews.html', crews=crews)
+    employees_in_no_crew = Employee.query \
+        .filter(Employee.employee_type != 'admin') \
+        .filter(Employee.crew_id == None) \
+        .all()
+    return render_template('crew/manage_crews.html', crews=crews, employees_in_no_crew=employees_in_no_crew)
 
 
 @app.route('/add_empty_crew', methods=['POST'])
@@ -37,6 +41,17 @@ def delete_crew(id):
         return render_template('tour/manage_tours.html'), 200
     else:
         return render_template('tour/manage_tours.html'), 500
+
+
+@app.route('/move_employee_to_crew', methods=['POST'])
+@login_required
+@admin_required
+def move_employee_to_crew():
+    content = request.json
+    employee = Employee.query.filter_by(id=content['employee_id']).first()
+    employee.crew_id = content['crew_id']
+    db.session.commit()
+    return redirect(url_for('manage_crews'))
 
 
 @app.route('/my_crew')

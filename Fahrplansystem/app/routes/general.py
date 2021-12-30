@@ -1,11 +1,11 @@
-from datetime import datetime
+import json
 
+import requests
 from flask import render_template, flash, redirect, url_for, request, session
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import desc, asc
 
-# TODO figure out why importing admin_required wont work
-from app import app, db, admin_required
+from app import app, admin_required
 from app.forms import LoginForm, RushhourForm
 from app.models import *
 
@@ -23,7 +23,10 @@ def append_activity(message):
 @app.route('/home', methods=['GET'])
 @login_required
 def home():
-    return render_template('general/home.html', recent_activity=Activity.query.order_by(desc(Activity.time)).all())
+    sorted_tours = sorted(Tour.query.all(), key=lambda t: t.time_until_next_trip())
+    return render_template('general/home.html',
+                           recent_activity=Activity.query.order_by(desc(Activity.time)).all(),
+                           tours=sorted_tours)
 
 
 @app.route('/', methods=['GET'])

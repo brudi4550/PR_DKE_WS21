@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta, time, date, MAXYEAR
+from datetime import datetime, timedelta, time, date
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db
+from app import app, db
 from app import login
 
 
@@ -139,6 +139,33 @@ class Interval(db.Model):
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 
 
+# trips whose datetime lies in the past are ignored
+# expects that a trip might be None
+def earlier_upcoming_trip(trip1, trip2):
+    trip1_in_past = True
+    trip2_in_past = True
+    if trip1 is not None:
+        trip1_in_past = trip1.is_before_current_datetime()
+    if trip2 is not None:
+        trip2_in_past = trip2.is_before_current_datetime()
+    # None trips get treated as if they were in the past
+    if not trip1_in_past and not trip2_in_past:
+        if trip1.date != trip2.date:
+            next_trip = min(trip1, trip2, key=lambda t: t.date)
+        else:
+            if trip1.time.hour != trip2.time.hour:
+                next_trip = min(trip1, trip2, key=lambda t: t.time.hour)
+            else:
+                next_trip = min(trip1, trip2, key=lambda t: t.time.minute)
+        return next_trip
+    elif not trip1_in_past and trip2_in_past:
+        return trip1
+    elif trip1_in_past and not trip2_in_past:
+        return trip2
+    elif trip1_in_past and trip2_in_past:
+        return None
+
+
 class Tour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start = db.Column(db.String(64), nullable=False)
@@ -155,30 +182,27 @@ class Tour(db.Model):
             interval_trips += interval.trips.count()
         return single_trips + interval_trips
 
+    # next_trip returns a trip that lies in the future. Past, not yet deleted, trips are ignored
+    # if there is no trip in the future for this tour next_trip returns None
     def next_trip(self):
-        dummy_date = date(year=MAXYEAR, month=1, day=1)
-        dummy_time = time()
-        next_trip = Trip(date=dummy_date, time=dummy_time)
+        next_trip = None
         for trip in self.trips:
-            if trip.date < next_trip.date:
-                next_trip = trip
-            elif trip.date == next_trip.date:
-                if trip.time.hour < next_trip.time.hour:
-                    next_trip = trip
-                elif trip.time.hour == next_trip.time.hour:
-                    if trip.time.minute < next_trip.time.minute:
-                        next_trip = trip
+            next_trip = earlier_upcoming_trip(next_trip, trip)
         for interval in self.intervals:
             for trip in interval.trips:
-                if trip.date < next_trip.date:
-                    next_trip = trip
-                elif trip.date == next_trip.date:
-                    if trip.time.hour < next_trip.time.hour:
-                        next_trip = trip
-                    elif trip.time.hour == next_trip.time.hour:
-                        if trip.time.minute < next_trip.time.minute:
-                            next_trip = trip
+                next_trip = earlier_upcoming_trip(next_trip, trip)
         return next_trip
+
+    def time_until_next_trip(self):
+        next_trip = self.next_trip()
+        datetime_next = datetime(year=next_trip.date.year,
+                                 month=next_trip.date.month,
+                                 day=next_trip.date.day,
+                                 hour=next_trip.time.hour,
+                                 minute=next_trip.time.minute)
+        now = datetime.now()
+        until = datetime_next - now
+        return until.total_seconds()
 
 
 class Trip(db.Model):
@@ -188,6 +212,18 @@ class Trip(db.Model):
     crew_id = db.Column(db.Integer, db.ForeignKey('crew.id'))
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
     interval_id = db.Column(db.Integer, db.ForeignKey('interval.id'))
+
+    def is_before_current_datetime(self):
+        datetime_now = datetime.now()
+        if self.date < date.today():
+            return True
+        elif self.date == date.today():
+            if self.time.hour < datetime_now.hour:
+                return True
+            if self.time.hour == datetime_now.hour:
+                if self.time.minute < datetime_now.minute:
+                    return True
+        return False
 
     def __repr__(self):
         return '<Trip {}>'.format(self.id)
