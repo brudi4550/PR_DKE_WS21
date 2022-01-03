@@ -15,6 +15,14 @@
   cursor: move;
 }
 
+.no-cursor-interaction {
+    cursor: default;
+}
+
+.crew-dragging-area {
+    width: 30%;
+}
+
 .red {
     color: red;
 }

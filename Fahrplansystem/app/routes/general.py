@@ -1,12 +1,8 @@
-import json
-
-import requests
-from flask import render_template, flash, redirect, url_for, request, session
+from flask import render_template, flash, redirect, url_for, request, session, Response
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import desc, asc
-
-from app import app, admin_required
-from app.forms import LoginForm, RushhourForm
+from app import admin_required
+from app.forms import LoginForm, RushhourForm, SystemForm
 from app.models import *
 
 
@@ -23,7 +19,7 @@ def append_activity(message):
 @app.route('/home', methods=['GET'])
 @login_required
 def home():
-    sorted_tours = sorted(Tour.query.all(), key=lambda t: t.time_until_next_trip())
+    sorted_tours = sorted(Tour.query.all(), key=lambda t: (t.next_trip() is None, t.time_until_next_trip()))
     return render_template('general/home.html',
                            recent_activity=Activity.query.order_by(desc(Activity.time)).all(),
                            tours=sorted_tours)
@@ -71,9 +67,16 @@ def logout():
 @admin_required
 def system_settings():
     sys = System.query.get(1)
+    sys_form = SystemForm()
+    if request.method == 'GET':
+        sys_form.days_to_keep_old_trips.data = sys.days_to_keep_old_trips
     rushhours = sys.rushhours
     rushhour_form = RushhourForm()
     rushhour_form.submit.label.text = '+'
+    if sys_form.validate_on_submit():
+        sys.days_to_keep_old_trips = sys_form.days_to_keep_old_trips.data
+        db.session.commit()
+        redirect(url_for('system_settings'))
     if rushhour_form.validate_on_submit():
         r = Rushhour()
         start_time_date = datetime(year=2021,
@@ -92,7 +95,8 @@ def system_settings():
         db.session.add(r)
         db.session.commit()
         redirect(url_for('system_settings'))
-    return render_template('general/system_settings.html', sys=sys, rushhours=rushhours, rushhour_form=rushhour_form)
+    return render_template('general/system_settings.html', sys=sys, sys_form=sys_form,
+                           rushhours=rushhours, rushhour_form=rushhour_form)
 
 
 @app.route('/edit_rushhour/<rushhour_id>', methods=['GET', 'POST'])
@@ -140,9 +144,32 @@ def delete_rushhour(rushhour_id):
         return redirect(url_for('system_settings')), 500
 
 
-@app.route('/update_timetable')
+@app.route('/local_update_timetable', methods=['PATCH'])
 @login_required
 @admin_required
 def update_timetable_route():
-    update_timetable()
-    return redirect(url_for('system_settings'))
+    added_count, deleted_count = update_timetable()
+    added_count_d = 'Durchführung' if added_count == 0 else 'Durchführungen'
+    deleted_count_d = 'Durchführung' if deleted_count == 0 else 'Durchführungen'
+    append_activity(f'Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
+    append_activity(f'Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
+    return Response(status=200)
+
+
+@app.route('/remote_update_timetable', methods=['PATCH'])
+def update_timetable_remotely():
+    request_id = request.authorization.username
+    password = request.authorization.password
+    employee = Employee.query.filter_by(id=request_id).first()
+    if employee is not None:
+        if employee.check_password(password):
+            # make update_timetable return a boolean indicating if successful or not
+            added_count, deleted_count = update_timetable()
+            added_count_d = 'Durchführung' if added_count == 0 else 'Durchführungen'
+            deleted_count_d = 'Durchführung' if deleted_count == 0 else 'Durchführungen'
+            append_activity(f'Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
+            append_activity(f'Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
+            return render_template('general/update_timetable.html', successful=True, added_count=added_count,
+                                   deleted_count=deleted_count), 200
+    return render_template('general/update_timetable.html', successful=False), 500
+

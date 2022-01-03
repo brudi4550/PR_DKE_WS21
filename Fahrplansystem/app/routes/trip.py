@@ -5,7 +5,28 @@ from flask_login import login_required, current_user
 
 from app import app, db, admin_required
 from app.forms import SingleTripForm, IntervalTripForm
-from app.models import Tour, Trip, Interval, Crew
+from app.models import Tour, Trip, Interval, Crew, get_weekdays
+
+
+# Specified weekdays of an interval get saved in a string formatted like:
+# '4:5:6:', which would indicate that this interval is only active on friday, saturday and sunday.
+def add_weekdays(iv, iv_form):
+    weekdays = ''
+    if iv_form.monday.data:
+        weekdays += '0:'
+    if iv_form.tuesday.data:
+        weekdays += '1:'
+    if iv_form.wednesday.data:
+        weekdays += '2:'
+    if iv_form.thursday.data:
+        weekdays += '3:'
+    if iv_form.friday.data:
+        weekdays += '4:'
+    if iv_form.saturday.data:
+        weekdays += '5:'
+    if iv_form.sunday.data:
+        weekdays += '6:'
+    iv.weekdays = weekdays
 
 
 @app.route('/manage_trips/<tour_id>', methods=['GET', 'POST'])
@@ -34,17 +55,19 @@ def manage_trips(tour_id):
         iv.tour_id = tour_id
         iv.start_time = start_time
         iv.end_time = end_time
+        add_weekdays(iv, add_interval_trip_form)
+        weekdays = get_weekdays(iv)
         iv.interval_minutes = add_interval_trip_form.interval.data
         # iv only gets assigned an id after commit
         db.session.add(iv)
         db.session.commit()
         while start_date < end_date:
             while start_time < end_time:
-                t = Trip()
-                t.date = start_date
-                t.time = start_time
-                t.interval_id = iv.id
-                db.session.add(t)
+                if start_date.weekday() in weekdays:
+                    t = Trip()
+                    t.start_datetime = datetime.combine(start_date, start_time)
+                    t.interval_id = iv.id
+                    db.session.add(t)
                 # Converting datetime.time to datetime.datetime and back
                 # because time doesn't support addition, datetime does
                 dummy_time = datetime(2021, 1, 1, hour=start_time.hour, minute=start_time.minute)
@@ -55,10 +78,10 @@ def manage_trips(tour_id):
         db.session.commit()
         return redirect('/manage_trips/' + tour_id)
     if add_single_trip_form.validate_on_submit():
-        trip = Trip(date=add_single_trip_form.date.data,
-                    time=add_single_trip_form.time.data,
-                    crew_id=add_single_trip_form.assigned_crew.data,
-                    tour_id=tour_id)
+        trip = Trip()
+        trip.start_datetime = datetime.combine(add_single_trip_form.date.data, add_single_trip_form.time.data)
+        trip.crew_id = add_single_trip_form.assigned_crew.data
+        trip.tour_id = tour_id
         db.session.add(trip)
         db.session.commit()
         return redirect('/manage_trips/'+tour_id)
@@ -79,12 +102,11 @@ def edit_trip(trip_id):
     form.submit.label.text = 'Durchführung speichern'
     if request.method == 'GET':
         session['prev_url'] = request.referrer
-        form.date.data = trip.date
-        form.time.data = trip.time
+        form.date.data = trip.start_datetime.date()
+        form.time.data = trip.start_datetime.time()
         form.assigned_crew.data = trip.crew_id
     if form.validate_on_submit():
-        trip.date = form.date.data
-        trip.time = form.time.data
+        trip.start_datetime = datetime.combine(form.date.data, form.time.data)
         trip.crew_id = form.assigned_crew.data
         db.session.commit()
         return redirect(session['prev_url'])

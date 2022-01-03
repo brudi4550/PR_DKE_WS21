@@ -26,22 +26,22 @@
                     <td>{{ tour.train }}</td>
                     <td>{{ tour.rushHourMultiplicator}}x</td>
                     <td>
-                        {% with trip_count=tour.trip_count() %}
-                        {% if trip_count > 0 %}
+                        {% with future_trip_count=tour.future_trip_count() %}
+                        {% if future_trip_count > 0 %}
                             {% with next_trip=tour.next_trip() %}
                                 Nächste Durchführung:<br>
-                                {{ next_trip.date.strftime('%d.%m.%Y')}}
-                                {{ next_trip.time.strftime('%H:%M:%S')}}<br/>
-                                    {% if trip_count > 1 %}
-                                        {% if trip_count == 2 %}
-                                            <p>{{ trip_count-1 }} weitere Durchführung</p>
+                                {{ next_trip.start_datetime.date().strftime('%d.%m.%Y')}}
+                                {{ next_trip.start_datetime.time().strftime('%H:%M:%S')}}<br/>
+                                    {% if future_trip_count > 1 %}
+                                        {% if future_trip_count == 2 %}
+                                            <p>{{ future_trip_count-1 }} weitere Durchführung</p>
                                         {% else %}
-                                            <p>{{ trip_count-1 }} weitere Durchführungen</p>
+                                            <p>{{ future_trip_count-1 }} weitere Durchführungen</p>
                                         {% endif %}
                                     {% endif %}
                             {% endwith %}
                         {% else %}
-                            <p>Keine Durchführungen eingetragen</p>
+                            <p>Keine zukünftigen Durchführungen eingetragen</p>
                         {% endif %}
                         {% endwith %}
                         <a href="/manage_trips/{{ tour.id }}">

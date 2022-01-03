@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import date
+import locale
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 
@@ -9,7 +9,8 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData, asc
+from sqlalchemy import MetaData
+
 from app.config import Config
 
 convention = {
@@ -19,6 +20,7 @@ convention = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s"
 }
+locale.setlocale(locale.LC_ALL, 'de_AT')
 metadata = MetaData(naming_convention=convention)
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -27,8 +29,6 @@ migrate = Migrate(app, db, render_as_batch=True)
 login = LoginManager(app)
 bootstrap = Bootstrap(app)
 login.login_view = 'login'
-
-
 
 
 def admin_required(func):
@@ -62,16 +62,8 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
     app.logger.info('Fahrplansystem gestartet')
 
-
 timetable_system = System.query.get(1)
 if timetable_system is None:
     timetable_system = System()
     db.session.add(timetable_system)
     db.session.commit()
-
-last_check = timetable_system.last_system_check
-if last_check is None or last_check.date() < date.today():
-    update_timetable()
-
-if __name__ == '__main__':
-    app().run(host='0.0.0.0', port=5000, debug=True)

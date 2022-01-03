@@ -20,6 +20,7 @@ def add_tour():
         route = form.route_choice.data.split("-")
         tour.start = route[0]
         tour.end = route[1]
+        tour.train = form.train_choice.data
         tour.rushHourMultiplicator = form.rush_hour_multiplicator.data
         db.session.add(tour)
         db.session.commit()
@@ -32,7 +33,6 @@ def add_tour():
 @admin_required
 def manage_tours():
     tours = Tour.query.order_by(Tour.id.asc())
-
     return render_template('tour/manage_tours.html', tours=tours)
 
 

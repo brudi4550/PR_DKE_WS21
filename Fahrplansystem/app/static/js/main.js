@@ -133,6 +133,18 @@ $(document).ready(function () {
         });
     });
 
+    $('.update-timetable').click(function () {
+        var ajaxReq = $.ajax({
+            url: '/local_update_timetable',
+            type: 'PATCH',
+            statusCode: {
+                200: function () {
+                    window.location.reload()
+                }
+            }
+        });
+    });
+
     $('.tour-timer').each(function (i, obj) {
         var timer = $(this);
         var secs = timer.attr('until');
@@ -163,6 +175,9 @@ $(document).ready(function () {
 //non jquery functions
 function drag_employee(ev) {
     ev.dataTransfer.setData('data', ev.target.getAttribute('employee_id'));
+    let img = document.createElement('img');
+    img.src = '/static/images/employee.png';
+    ev.dataTransfer.setDragImage(img, 25, 25);
 }
 
 function drop_employee(ev) {

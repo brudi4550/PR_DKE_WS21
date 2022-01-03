@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, time, date
 def edit_interval(interval_id):
     iv = Interval.query.filter_by(id=interval_id).first()
     trips = iv.trips.all()
-    sorted_trips = sorted(trips, key=lambda trip: trip.date)
+    sorted_trips = sorted(trips, key=lambda trip: trip.start_datetime)
     return render_template('interval/edit_interval.html', trips=sorted_trips)
 
 

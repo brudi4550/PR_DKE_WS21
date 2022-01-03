@@ -35,8 +35,8 @@
                         {% for single_trip in single_trips %}
                         <tr class="single_trips">
                             <td>{{ single_trip.id }}</td>
-                            <td>{{ single_trip.date }}</td>
-                            <td>{{ single_trip.time }}</td>
+                            <td>{{ single_trip.start_datetime.date().strftime('%d.%m.%Y') }}</td>
+                            <td>{{ single_trip.start_datetime.time().strftime('%H:%M') }}</td>
                             <td>{{ single_trip.crew_id }}</td>
                             <td class="text-center">
                                 <a href="/edit_trip/{{ single_trip.id }}">
@@ -66,16 +66,33 @@
                             <td>Im Intervall von: (in Minuten)</td>
                             <td class="text-center">Hinzufügen</td>
                         </tr>
-                        <tr>
-                            <form action="" method="post">
-                                {{ add_interval_trip_form.hidden_tag() }}
+                        <form action="" method="post">
+                            {{ add_interval_trip_form.hidden_tag() }}
+                            <tr>
                                 <td>{{ add_interval_trip_form.start_date() }}</td>
                                 <td>{{ add_interval_trip_form.start_time() }}</td>
                                 <td>{{ add_interval_trip_form.end_time() }}</td>
                                 <td>{{ add_interval_trip_form.interval() }}</td>
                                 <td class="text-center">{{ add_interval_trip_form.submit() }} </td>
-                            </form>
-                        </tr>
+                            </tr>
+                            <tr>
+                                <td>
+                                    {{ add_interval_trip_form.monday.label }} {{ add_interval_trip_form.monday() }} <br>
+                                    {{ add_interval_trip_form.tuesday.label }} {{ add_interval_trip_form.tuesday() }}
+                                </td>
+                                <td>
+                                    {{ add_interval_trip_form.wednesday.label }} {{ add_interval_trip_form.wednesday() }} <br>
+                                    {{ add_interval_trip_form.thursday.label }} {{ add_interval_trip_form.thursday() }}
+                                </td>
+                                <td>
+                                    {{ add_interval_trip_form.friday.label }} {{ add_interval_trip_form.friday() }} <br>
+                                    {{ add_interval_trip_form.saturday.label }} {{ add_interval_trip_form.saturday() }}
+                                </td>
+                                <td>
+                                    {{ add_interval_trip_form.sunday.label }} {{ add_interval_trip_form.sunday() }}
+                                </td>
+                            </tr>
+                        </form>
                         <tr>
                             <th>Intervall-ID</th>
                             <th>Zwischen</th>
