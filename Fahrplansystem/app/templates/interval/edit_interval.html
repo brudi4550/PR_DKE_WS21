@@ -20,8 +20,8 @@
                     {% for single_trip in trips %}
                     <tr class="single_trips">
                         <td>{{ single_trip.id }}</td>
-                        <td>{{ single_trip.date }}</td>
-                        <td>{{ single_trip.time }}</td>
+                        <td>{{ single_trip.start_datetime.date().strftime('%A, %d.%m.%Y') }}</td>
+                        <td>{{ single_trip.start_datetime.time().strftime('%H:%M') }}</td>
                         <td>{{ single_trip.crew_id }}</td>
                         <td class="text-center">
                             <a href="/edit_trip/{{ single_trip.id }}">

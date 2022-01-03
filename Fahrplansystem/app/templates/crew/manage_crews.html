@@ -35,16 +35,20 @@
                     </tr>
                     {% endfor %}
                 </table>
-                <button class="target btn btn-primary" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
-                   <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
-                </button>
+                <div class="centered">
+                    <button class="target btn btn-secondary btn-block crew-dragging-area no-cursor-interaction" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
+                        <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
+                    </button>
+                </div>
             </td>
             {% else %}
             <td>
                 <p>Keine Mitarbeiter in diesem Bordpersonalteam</p>
-                <button class="target btn btn-primary" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
-                    <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
-                </button>
+                <div class="centered">
+                    <button class="target btn btn-secondary btn-block crew-dragging-area no-cursor-interaction" crew_id="{{ crew.id }}" ondrop="drop_employee(event)" ondragover="allowDrop(event)">
+                        <span class="glyphicon glyphicon-plus" crew_id="{{ crew.id }}" aria-hidden="true"></span>
+                    </button>
+                </div>
             </td>
             {% endif %}
             {% endwith %}

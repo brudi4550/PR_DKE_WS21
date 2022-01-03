@@ -78,12 +78,19 @@
             <tr>
                 <td>{{ tour.start }} &rarr; {{ tour.end }}</td>
                 <td>{{ tour.train }}</td>
-                <td class="tour-timer" until="{{ tour.time_until_next_trip() }}"></td>
-                <td>
-                    <a href="/manage_trips/{{ tour.id }}">
-                        Durchführungen ansehen &rarr;
-                    </a>
-                </td>
+                {% with time_until = tour.time_until_next_trip() %}
+                {% if time_until %}
+                    <td class="tour-timer" until="{{ time_until }}"></td>
+                    <td>
+                        <a href="/manage_trips/{{ tour.id }}">
+                            Durchführungen ansehen &rarr;
+                        </a>
+                    </td>
+                {% else %}
+                    <td>Keine nächste Durchführung gefunden</td>
+                    <td></td>
+                {% endif %}
+                {% endwith %}
             </tr>
             {% endfor %}
         </table>

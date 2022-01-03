@@ -1,0 +1,7 @@
+{% if successful %}
+<p>The patch request was successful</p>
+<p>Added trips: {{ added_count }}</p>
+<p>Deleted trips: {{ deleted_count }}</p>
+{% else %}
+<p>The patch request was not successful. Either authentication or system failure. </p>
+{% endif %}

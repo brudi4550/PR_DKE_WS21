@@ -1,6 +1,6 @@
 from flask_wtf import Form, FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, PasswordField, BooleanField, \
-    SelectField, DecimalField, DateField, TimeField, RadioField
+    SelectField, DecimalField, DateField, TimeField, RadioField, DateTimeField
 from wtforms.validators import DataRequired, Optional
 from wtforms.validators import ValidationError, Email, EqualTo
 from app.models import Employee
@@ -94,6 +94,13 @@ class IntervalTripForm(FlaskForm):
     start_date = DateField('Start des Intervalls', validators=[DataRequired()])
     start_time = TimeField('Zwischen', validators=[DataRequired()])
     end_time = TimeField('Und', validators=[DataRequired()])
+    monday = BooleanField('Montag', default=True)
+    tuesday = BooleanField('Dienstag', default=True)
+    wednesday = BooleanField('Mittwoch', default=True)
+    thursday = BooleanField('Donnerstag', default=True)
+    friday = BooleanField('Freitag', default=True)
+    saturday = BooleanField('Samstag', default=True)
+    sunday = BooleanField('Sonntag', default=True)
     interval = IntegerField('Im Intervall von: (in Minuten)', validators=[DataRequired()])
     submit = SubmitField('Intervall Durchführung hinzufügen')
 
@@ -102,3 +109,9 @@ class RushhourForm(FlaskForm):
     start_time = TimeField('Von', validators=[DataRequired()])
     end_time = TimeField('Bis', validators=[DataRequired()])
     submit = SubmitField('Hinzufügen', validators=[DataRequired()])
+
+
+class SystemForm(FlaskForm):
+    days_to_keep_old_trips = IntegerField('Tage bis eine alte Durchführung gelöscht wird:',
+                                          validators=[DataRequired()])
+    submit = SubmitField('Speichern')
