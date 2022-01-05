@@ -6,13 +6,13 @@
         <p>Es kann keine Wartung erstellt werden, da weder Züge, noch Wartungspersonal vorhanden ist!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
     {% elif wartungspersonal == [] %}
-        <p>Um eine Wartung hinzufügen zu können, muss Wartungspersonal vorhanden sein!
-            <a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Hier</a>
+        <p>Um eine Wartung hinzufügen zu können, muss ein Wartungspersonal vorhanden sein!</p>
+        <p><a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Hier</a>
             können Sie einen neuen Wartungsmitarbeiter erstellen.
         </p>
     {% elif zug == [] %}
-        <p>Um eine Wartung hinzufügen zu können, muss ein Zug vorhanden sein!
-            <a href="{{ url_for('createTrain') }}">Hier</a> können Sie einen Zug erstellen.
+        <p>Um eine Wartung hinzufügen zu können, muss ein Zug vorhanden sein!</p>
+        <p><a href="{{ url_for('createTrain') }}">Hier</a> können Sie einen Zug erstellen.
         </p>
     {% else %}
         <h2>Neue Wartung hinzufügen:</h2>

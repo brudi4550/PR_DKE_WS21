@@ -132,9 +132,8 @@ class Personenwagen(Wagen):
 
 class Wartung(db.Model):
     wartungsNr = db.Column(db.Integer, primary_key=True)
-    datum = db.Column(db.Date, index=True, nullable=False)
-    von = db.Column(db.Time, nullable=False)
-    bis = db.Column(db.Time, nullable=False)
+    von = db.Column(db.DateTime, nullable=False)
+    bis = db.Column(db.DateTime, nullable=False)
     zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
 
     ''' In der folgenden Methode werden die Mitarbeiter der Klasse "Wartungspersonal" zurückgegeben, die sich in 
