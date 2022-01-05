@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, time
 from hashlib import md5
 from app import db, login
 from flask_login import UserMixin
@@ -29,7 +29,7 @@ class Zug(db.Model):
         dass die Abrage erst dann ausgeführt wird, wenn diese angefordert wird. '''
     zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
     wartung = db.relationship('Wartung', backref='zug', lazy='dynamic', cascade='all, delete')
-    triebwagen_nr = db.Column(db.Integer, db.ForeignKey('triebwagen.nr', onupdate='CASCADE'), unique=True, nullable=False)
+    triebwagen_nr = db.Column(db.Integer, db.ForeignKey('triebwagen.nr', onupdate='CASCADE', ondelete='CASCADE'), unique=True, nullable=False)
     personenwagen = db.relationship('Personenwagen', backref='zug', lazy='dynamic')
 
     def __repr__(self):
@@ -64,11 +64,6 @@ class Mitarbeiter(UserMixin, db.Model, AbstractConcreteBase):
     def check_password(self, password):
         return check_password_hash(self.passwort, password)
 
-    def avatar(self, size):
-        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
-            digest, size)
-
 @login.user_loader
 def load_user(id):
     return Mitarbeiter.query.get(int(id))
@@ -85,7 +80,7 @@ class Wartungspersonal(Mitarbeiter):
         angefordert wird. '''
     wartungen = db.relationship(
         'Wartung', secondary=ist_zugeteilt,
-        backref=db.backref('wartungspersonal', lazy='dynamic'), lazy='dynamic', cascade='all, delete')
+        backref=db.backref('wartungspersonal', lazy='dynamic'), lazy='dynamic')
     
     __mapper_args__ = { 'polymorphic_identity':'wartungspersonal', 'concrete':True}
     
@@ -137,8 +132,9 @@ class Personenwagen(Wagen):
 
 class Wartung(db.Model):
     wartungsNr = db.Column(db.Integer, primary_key=True)
-    von = db.Column(db.DateTime, index=True, nullable=False)
-    bis = db.Column(db.DateTime, index=True, nullable=False)
+    datum = db.Column(db.Date, index=True, nullable=False)
+    von = db.Column(db.Time, nullable=False)
+    bis = db.Column(db.Time, nullable=False)
     zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'), nullable=False)
 
     ''' In der folgenden Methode werden die Mitarbeiter der Klasse "Wartungspersonal" zurückgegeben, die sich in 
