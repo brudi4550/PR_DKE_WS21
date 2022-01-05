@@ -9,7 +9,9 @@ from config import Config
 from flask_bootstrap import Bootstrap
 from sqlalchemy import MetaData
 
-''' Nachfolgend wird ein MetaData Objekt hinzugefügt, um damit bei Datenbankmigrationen (flask db migrate) automatisch die Namensgebung der Constraints durchzuführen, da diese sonst in den Migrationsdateien mit None definiert werden und es somit zu einem "ValueError: Constraint must have a name" Fehler kommt ''' 
+''' Nachfolgend wird ein MetaData Objekt hinzugefügt, um damit bei Datenbankmigrationen (flask db migrate) 
+    automatisch die Namensgebung der Constraints durchzuführen, da diese sonst in den Migrationsdateien mit 
+    None definiert werden und es somit zu einem "ValueError: Constraint must have a name" Fehler kommt '''
 convention = {
     "ix": 'ix_%(column_0_label)s',
     "uq": "uq_%(table_name)s_%(column_0_name)s",

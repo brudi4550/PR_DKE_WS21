@@ -2,7 +2,9 @@
 
 {% block app_content %}
     <h4>Hallo, {{ current_user.vorname }}! Wählen Sie eine Option aus:</h4>
-    <a href="{{ url_for('trainOverview') }}">Zugübersicht</a><br>
-    <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a><br>
-    <a href="">Wartungsübersicht</a><br>
+    <ul class="list-unstyled">
+        <li> <a href="{{ url_for('trainOverview') }}">Zugübersicht</a> </li>
+        <li> <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a> </li>
+        <li> <a href="{{ url_for('wartungOverview') }}">Wartungsübersicht</a> </li>
+    </ul>
 {% endblock %}

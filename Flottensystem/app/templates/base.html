@@ -6,7 +6,7 @@
         Wilkommen im Flotteninformationssystem
     {% endif %}
 {% endblock %}
-{% block navbar %}
+{% block navbar %}  <!-- Hier wird eine Navigationsleiste erstellt -->
     <nav class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header">
@@ -37,6 +37,7 @@
 
 {% block content %}
     <div class="container">
+        <!-- Durch den nachfolgenden Ausdruck können die Nachrichten eingeblendet werden, die durch "flash" erzeugt werden -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
@@ -44,7 +45,8 @@
             {% endfor %}
         {% endif %}
         {% endwith %}
-        
+        <!-- Im nachfolgenden Ausdruck handelt es sich um den eigentlichen Inhalt der Website, welches dynamisch mit diesem Template gebunden wird.
+             Also müssen die anderen Templates den Inhalt nur noch in einem Block "app_content" einfügen, damit diese hier eingefügt werden. -->
         {% block app_content %}{% endblock %}
     </div>
 {% endblock %}

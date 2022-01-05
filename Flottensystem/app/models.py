@@ -7,6 +7,8 @@ from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import configure_mappers
 
 
+''' Anmerkung: Bei der Beschreibung des Codes wurde darauf beachtet, den Code möglichst wenig doppelt zu beschreiben. '''
+
 ''' Da zwischen Wartungspersonal und Wartung eine "* zu *" Assoziation besteht, wird nachfolgend eine Hilfstabelle
     definiert, welches die Primärschlüssel der Klassen enthält, die durch die Assoziation verknüpft sind '''
 ist_zugeteilt = db.Table('ist_zugeteilt',
@@ -27,7 +29,7 @@ class Zug(db.Model):
         dass die Abrage erst dann ausgeführt wird, wenn diese angefordert wird. '''
     zugpersonal = db.relationship('Zugpersonal', backref='zug', lazy='dynamic')
     wartung = db.relationship('Wartung', backref='zug', lazy='dynamic', cascade='all, delete')
-    triebwagen_nr = db.Column(db.Integer, db.ForeignKey('triebwagen.nr', onupdate='CASCADE'), nullable=False)
+    triebwagen_nr = db.Column(db.Integer, db.ForeignKey('triebwagen.nr', onupdate='CASCADE'), unique=True, nullable=False)
     personenwagen = db.relationship('Personenwagen', backref='zug', lazy='dynamic')
 
     def __repr__(self):
@@ -42,15 +44,23 @@ class Mitarbeiter(UserMixin, db.Model, AbstractConcreteBase):
     email = db.Column(db.String(255), index=True, unique=True, nullable=False)
     passwort = db.Column(db.String(128), nullable=False)
 
+    ''' Die Methode "__repr__" dient dazu, um zu bestimmen, wie Objekte dieser Klasse ausgegeben werden.
+        Hat man z.B. in der Variable "m" eine Mitarbeiterinstanz eingespeichert, dann wird durch das 
+        eingeben von "m" genau der Inhalt dieser Methode zurückgegeben, also in diesem Fall der 
+        String "<Mitarbeiter x y>", wobei das x hier für einen beliebigen Vornamen und das y für einen
+        beliebigen Nachnamen steht '''
     def __repr__(self):
         return '<Mitarbeiter {} {}>'.format(self.vorname, self.nachname)
         
-    def get_id(self):	# Hiermit wird die get_id Methode von flask_login überschieben
+    def get_id(self):	# Hiermit wird die get_id Methode von flask_login (UserMixin) überschieben
         return self.mitarbeiterNr
 
     def set_password(self, password):   # Es wird der Hashwert des eingegebenen Passworts gebildet
         self.passwort = generate_password_hash(password)
 
+    ''' In dieser Methode wird das gehashte Passwort überprüft, genauer gesagt wird überprüft, ob der 
+        übergebene Parameter (bzw. das übergebene Passwort) mit dem originialen gehashten Passwort
+        übereinstimmt '''
     def check_password(self, password):
         return check_password_hash(self.passwort, password)
 

@@ -3,7 +3,7 @@
 
 {% block app_content %}
     {% if wartung == [] %}
-        <p>Es sind keine Wartungen verfügbar!</p>
+        <p>Es sind keine Wartungen vorhanden!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
     {% else %}
         <h3>Wartungsübersicht:</h3><br>

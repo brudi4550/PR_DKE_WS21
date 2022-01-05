@@ -2,10 +2,43 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    {% if personenwagen == [] and triebwagen == [] %}
+        <p>Es kann kein Zug erstellt werden, da weder Personenwaggons, noch Triebwaggons vorhanden sind!</p>
+        <p>Klicken Sie <a href="{{ url_for('waggon') }}">hier</a>, um neue Waggons zu erstellen.</p>
+
+    {% elif personenwagen == [] %}
+        <p>Um einen Zug erstellen zu können, muss zumindest ein Personenwaggon vorhanden sein!</p>
+        <p><a href="{{ url_for('createWaggon', typ='Personenwagen') }}">Hier</a>
+            können Sie einen neuen Personenwagen erstellen.
+        </p>
+    {% elif triebwagen == [] %}
+        <p>Um einen Zug erstellen zu können, muss zumindest ein Triebwaggon vorhanden sein!</p>
+        <p><a href="{{ url_for('createWaggon', typ='Triebwagen') }}">Hier</a>
+            können Sie einen neuen Triebwagen erstellen.
+        </p>
+    {% else %}
     <h2>Neuen Zug erstellen:</h2>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form)}}
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+
+                {{ wtf.form_field(form.nr) }}
+                {{ wtf.form_field(form.name) }}
+                {{ wtf.form_field(form.triebwagen_nr) }}
+                <b>Personenwagen</b>
+                {% for p in personenwagen %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" value="{{ p.nr }}" name="personenwagenCheckbox">
+                            {{ p.nr }} (Spurweite: {{ p.spurweite }} mm)
+                        </label>
+                    </div>
+                {% endfor %}
+                {{ wtf.form_field(form.submit) }}
+            </form>
         </div>
     </div>
+    {% endif %}
 {% endblock %}

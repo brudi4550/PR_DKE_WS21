@@ -5,7 +5,24 @@
     <h2>Zug bearbeiten</h2><br>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+
+                {{ wtf.form_field(form.nr) }}
+                {{ wtf.form_field(form.name) }}
+                {{ wtf.form_field(form.triebwagen_nr) }}
+                <b>Personenwagen</b>
+                {% for p in personenwagen %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" value="{{ p.nr }}" name="personenwagenCheckbox" {% if p.zugNr == zug.nr %} checked {% endif %}>
+                            {{ p.nr }} (Spurweite: {{ p.spurweite }} mm)
+                        </label>
+                    </div>
+                {% endfor %}
+                {{ wtf.form_field(form.submit) }}
+            </form>
         </div>
     </div>
 {% endblock %}

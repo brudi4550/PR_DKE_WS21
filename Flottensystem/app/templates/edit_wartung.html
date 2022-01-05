@@ -2,28 +2,28 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<h2>Bestehende Wartung bearbeiten:</h2><br>
-<div class="row">
-    <div class="col-md-4">
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            {{ wtf.form_errors(form, hiddens="only") }}
+    <h2>Bestehende Wartung bearbeiten:</h2><br>
+    <div class="row">
+        <div class="col-md-4">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
 
-            {{ wtf.form_field(form.wartungsNr) }}
-            {{ wtf.form_field(form.von) }}
-            {{ wtf.form_field(form.bis) }}
-            <b>Wartungspersonal</b>
-            {% for w in wartungspersonal %}
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" value="{{ w.mitarbeiterNr }}" name="WartungspersonalCheckbox"  {% if wartung.ist_zugeordnet(w) %} checked {% endif %}>
-                        {{ w.vorname }} {{ w.nachname }}
-                    </label>
-                </div>
-            {% endfor %}
-            {{ wtf.form_field(form.zugNr) }}
-            {{ wtf.form_field(form.submit) }}
-        </form>
+                {{ wtf.form_field(form.wartungsNr) }}
+                {{ wtf.form_field(form.von) }}
+                {{ wtf.form_field(form.bis) }}
+                <b>Wartungspersonal</b>
+                {% for w in wartungspersonal %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" value="{{ w.mitarbeiterNr }}" name="WartungspersonalCheckbox"  {% if wartung.ist_zugeordnet(w) %} checked {% endif %}>
+                            {{ w.vorname }} {{ w.nachname }}
+                        </label>
+                    </div>
+                {% endfor %}
+                {{ wtf.form_field(form.zugNr) }}
+                {{ wtf.form_field(form.submit) }}
+            </form>
+        </div>
     </div>
-</div>
 {% endblock %}

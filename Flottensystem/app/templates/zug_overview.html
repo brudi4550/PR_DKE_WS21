@@ -3,7 +3,7 @@
 
 {% block app_content %}
     {% if zug == [] %}
-        <p>Es sind keine Züge verfügbar!</p>
+        <p>Es sind keine Züge vorhanden!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
     {% else %}
         <h3>Zugübersicht:</h3><br>
@@ -11,11 +11,39 @@
             <tr>
                 <th>Zugnummer</th>
                 <th>Zugname</th>
+                <th>Zugeteilter Triebwagen</th>
+                <th>Zugeteilte(r) Personenwaggon(s)</th>
+                <th>Zugeteiltes Personal</th>
+                <th>Spurweite</th>
             </tr>
             {% for z in zug %}
                 <tr>
                     <td>{{ z.nr }}</td>
                     <td>{{ z.name }}</td>
+                    <td>{{ z.triebwagen_nr }}</td>
+                    <td>
+                        {% for p in z.personenwagen.all() %}
+                            <ul class="list-unstyled">
+                                <li>{{ p.nr }}</li>
+                            </ul>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if z.zugpersonal.all() == [] %}
+                            -
+                        {% else %}
+                            {% for p in z.zugpersonal.all() %}
+                                <ul class="list-unstyled">
+                                    <li>{{ p.vorname }} {{ p.nachname }} ({{ p.berufsbezeichnung  }})</li>
+                                </ul>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    {% for p in z.personenwagen.all() %}
+                        {%  if loop.first %}
+                            <td>{{ p.spurweite }} mm</td>
+                        {% endif %}
+                    {% endfor %}
                 </tr>
             {% endfor %}
         </table>

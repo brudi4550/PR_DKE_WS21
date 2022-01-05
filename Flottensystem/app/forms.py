@@ -1,8 +1,10 @@
+import datetime
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
     SelectField, DateTimeField, SelectMultipleField, widgets
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
-from app.models import Mitarbeiter, Wagen, Zug, Wartung
+from app.models import Mitarbeiter, Wagen, Triebwagen, Personenwagen, Zug, Wartung
 
 ''' Folgende Vorgehensweise wurde bei der Codebeschreibung vorgenommen: Es wurde darauf geachtet, dass der Code nur einmal beschrieben wurde.
     In den darauf folgenden Codebeschreibungen befinden sich wenige bis teilweise keine Beschreibungen. Hier wird darauf verwiesen, in den 
@@ -225,8 +227,10 @@ class TriebwagenForm(FlaskForm):
 class PersonenwagenForm(FlaskForm):
     nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
     spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
-    sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=3)])
-    maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired()])
+    ''' Es wird angenommen, dass ein Waggon maximal zweistellig wiegt und maximal eine zweistellige sitzanzahl hat, also weniger als 100 Tonnen
+        und weniger als 100 Sitzplätze '''
+    sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=2)])
+    maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired(), Length(max=2)])
     submit = SubmitField('Erstellen')
 
     def validate_nr(self, nr):
@@ -274,8 +278,8 @@ class EditTriebwagenForm(FlaskForm):
 class EditPersonenwagenForm(FlaskForm):
     nr = StringField('Wagennummer', validators=[DataRequired(), Length(min=12, max=12)])
     spurweite = SelectField('Spurweite', choices=[('1435', 'Normalspur (1435 mm)'), ('1000', 'Schmalspur (1000 mm)')], validators=[DataRequired()])
-    sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=3)])
-    maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired()])
+    sitzanzahl = StringField('Sitzanzahl', validators=[DataRequired(), Length(max=2)])
+    maximalgewicht = StringField('Maximalgewicht [Tonnen]', validators=[DataRequired(), Length(max=2)])
     submit = SubmitField('Bestätigen')
 
     def __init__(self, original_nr, *args, **kwargs):
@@ -306,6 +310,7 @@ class EditPersonenwagenForm(FlaskForm):
 class ZugForm(FlaskForm):
     nr = StringField('Zugnummer', validators=[DataRequired()])
     name = StringField('Zugname', validators=[DataRequired()])
+    triebwagen_nr = SelectField('Triebwagen', validators=[DataRequired()])
     submit = SubmitField('Erstellen')
 
     def validate_nr(self, nr):
@@ -313,20 +318,37 @@ class ZugForm(FlaskForm):
         if zug is not None:
             raise ValidationError('Diese Zugnummer ist bereits vergeben! Bitte geben sie eine andere Zugnummer ein.')
 
+    def validate_triebwagen_nr(self, triebwagen_nr):
+        triebwagen = Triebwagen.query.filter_by(nr=triebwagen_nr.data).first()
+        ''' Es muss nachfolgend nicht abgefragt werden, ob es den Triebwagen überhaupt gibt, da die Triebwaggons dynamisch 
+            im SelectField gebunden werden und es somit auch nur die Triebwaggons im SelectField erscheinen, die in der 
+            Datenbank existieren. Deswegen wird nachfolgend auch nur abgefragt, ob der ausgewählte Triebwagen schon einem 
+            Zug zugeteilt wurde. Ist dieser der Fall, so wird ein Fehler ausgegeben.'''
+        if triebwagen.zug is not None:
+            raise ValidationError('Dieser Triebwagen wurde bereits einem Zug zugeordnet, bitte wählen Sie einen anderen Triebwagen aus')
+
 class EditZugForm(FlaskForm):
     nr = StringField('Zugnummer', validators=[DataRequired()])
     name = StringField('Zugname', validators=[DataRequired()])
+    triebwagen_nr = SelectField('Triebwagen', validators=[DataRequired()])
     submit = SubmitField('Erstellen')
 
-    def __init__(self, original_nr, *args, **kwargs):
+    def __init__(self, original_nr, original_triebwagen_nr, *args, **kwargs):
         super(EditZugForm, self).__init__(*args, **kwargs)
         self.original_nr = original_nr
+        self.original_triebwagen_nr = original_triebwagen_nr
 
     def validate_nr(self, nr):
         if nr.data != self.original_nr:
             zug = Zug.query.filter_by(nr=nr.data).first()
             if zug is not None:
                 raise ValidationError('Diese Zugnummer ist bereits vergeben! Bitte geben sie eine andere Zugnummer ein.')
+
+    def validate_triebwagen_nr(self, triebwagen_nr):
+        if triebwagen_nr.data != self.original_triebwagen_nr:
+            triebwagen = Triebwagen.query.filter_by(nr=triebwagen_nr.data).first()
+            if triebwagen.zug is not None and triebwagen.zug.nr != self.original_nr:
+                raise ValidationError('Dieser Triebwagen  wurde bereits einem Zug zugeteilt, bitte wählen Sie einen anderen Triebwagen aus')
 
 
 
@@ -348,18 +370,34 @@ class WartungForm(FlaskForm):
         if wartung is not None:
             raise ValidationError('Diese Wartungsnummer ist bereits vergeben! Bitte geben sie eine andere Wartungsnummer ein.')
 
-    ''' Hier wird überprüft, ob der Beginnzeitpunkt der Wartung nach dem Endzeitpunkt der Wartung erfolgt. Ist diese
-        Abfrage True, so wird ein Fehler ausgegeben '''
     def validate_von(self, von):
+        ''' Hier wird überprüft, ob der Beginnzeitpunkt der Wartung nach dem Endzeitpunkt der Wartung erfolgt. Ist diese
+        Abfrage True, so wird ein Fehler ausgegeben '''
         if von.data > self.bis.data:
             raise ValidationError('Der Beginn einer Wartung kann nicht nach dem Ende dieser erfolgen!')
+        ''' Als nächstes wird überprüft ob die Start- und Endzeit der Wartung gleich ist. '''
+        if von.data == self.bis.data:
+            raise ValidationError('Beginn und Ende einer Wartung darf nicht gleich sein!')
+        ''' Es wird angenommen, dass eine Wartung mindestens 30 Minuten (also 1800 Sekunden) dauert. Dies wird
+            in der nachfolgenden Abfrage überprüft, dabei wird das Timedelta berechnet, also der zeitliche
+            Unterschied zwischen Wartungsbeginn und Wartungsende. Dieser zeitliche Unterschied wird durch
+            "total_seconds" in Sekunden umgewandelt. Nun wird überprüft ob der zeitliche Unterschied, welches
+            in Sekunden umgewandelt wurde, kürzer als 1800 Sekunden (also eine halbe Stunde) ist '''
+        if (self.bis.data - von.data).total_seconds() < 1800:
+            raise ValidationError('Eine Wartung dauert mindestens 30 Minuten!')
 
-    ''' Hierbei handelt es sich um eine ähnliche Abfrage wie in "validate_von", nur dass hier überprüft wird,
+
+    def validate_bis(self, bis):
+        ''' Hierbei handelt es sich um eine ähnliche Abfrage wie in "validate_von", nur dass hier überprüft wird,
         ob der Endzeitpunkt der Wartung vor dem Beginnzeitpunkt der Wartung erfolgt. Auch hier wird ein Fehler
         ausgegeben, falls die Abfrage True ist '''
-    def validate_bis(self, bis):
         if bis.data < self.von.data:
             raise ValidationError('Das Ende der Wartung muss nach dem Beginn dieser erfolgen!')
+        ''' Die folgenden zwei Abfragen sind auch fast identisch wie in "validate_von" '''
+        if bis.data == self.von.data:
+            raise ValidationError('Beginn und Ende einer Wartung darf nicht gleich sein!')
+        if (bis.data - self.von.data).total_seconds() < 1800:
+            raise ValidationError('Eine Wartung dauert mindestens 30 Minuten!')
 
 class EditWartungForm(FlaskForm):
     wartungsNr = StringField('Wartungsnummer', validators=[DataRequired()])
