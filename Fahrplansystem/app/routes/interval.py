@@ -6,6 +6,8 @@ from app.forms import SingleTripForm, IntervalTripForm
 from app.models import Tour, Trip, Interval
 from datetime import datetime, timedelta, time, date
 
+from app.routes.general import append_activity
+
 
 @app.route('/edit_interval/<interval_id>')
 @login_required
@@ -22,9 +24,12 @@ def edit_interval(interval_id):
 @admin_required
 def delete_interval(interval_id):
     iv = Interval.query.filter_by(id=interval_id).first()
+    tour_id = iv.tour_id
+    trip_count = len(iv.trips.all())
     if iv is not None:
         db.session.delete(iv)
         db.session.commit()
+        append_activity(f'Intervall der Fahrt {tour_id} gelöscht ({trip_count} Durchführungen)')
         return redirect(session['prev_url']), 200
     else:
         return redirect(session['prev_url']), 500

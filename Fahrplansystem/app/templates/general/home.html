@@ -108,13 +108,13 @@
 <hr>
 <div class="col-md-7">
     <p>
-        <a href="/my_trips" class="btn btn-primary">
+        <a href="{{ url_for('my_trips') }}" class="btn btn-primary">
             <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
             Meine zugeteilten Durchführungen
         </a>
     </p>
     <p>
-        <a href="/my_crew" class="btn btn-primary">
+        <a href="{{ url_for('my_crew') }}" class="btn btn-primary">
             <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
             Mein Bordpersonalteam
         </a>

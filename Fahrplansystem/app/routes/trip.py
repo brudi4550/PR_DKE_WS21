@@ -10,6 +10,9 @@ from app.models import Tour, Trip, Interval, Crew, get_weekdays
 
 # Specified weekdays of an interval get saved in a string formatted like:
 # '4:5:6:', which would indicate that this interval is only active on friday, saturday and sunday.
+from app.routes.general import append_activity
+
+
 def add_weekdays(iv, iv_form):
     weekdays = ''
     if iv_form.monday.data:
@@ -76,6 +79,8 @@ def manage_trips(tour_id):
             start_date = start_date + timedelta(days=1)
             start_time = add_interval_trip_form.start_time.data
         db.session.commit()
+        trip_count = len(iv.trips.all())
+        append_activity(f'Intervall für Fahrt-ID {iv.tour_id} hinzugefügt ({trip_count} Durchführungen)')
         return redirect('/manage_trips/' + tour_id)
     if add_single_trip_form.validate_on_submit():
         trip = Trip()
@@ -84,6 +89,7 @@ def manage_trips(tour_id):
         trip.tour_id = tour_id
         db.session.add(trip)
         db.session.commit()
+        append_activity(f'Einzelne Durchführung für Fahrt-ID {trip.tour_id} hinzugefügt')
         return redirect('/manage_trips/'+tour_id)
     return render_template('trip/manage_trips.html',
                            tour=tour,
@@ -109,6 +115,7 @@ def edit_trip(trip_id):
         trip.start_datetime = datetime.combine(form.date.data, form.time.data)
         trip.crew_id = form.assigned_crew.data
         db.session.commit()
+        append_activity(f'Durchführung ID {trip.id} bearbeitet')
         return redirect(session['prev_url'])
     return render_template('trip/edit_trip.html', form=form, trip=trip)
 
@@ -121,6 +128,7 @@ def delete_trip(trip_id):
     if trip is not None:
         db.session.delete(trip)
         db.session.commit()
+        append_activity(f'Durchführung ID {trip.id} gelöscht')
         return redirect('/manage_trips/' + str(trip.tour_id)), 200
     return redirect('/manage_tours'), 500
 
@@ -128,5 +136,6 @@ def delete_trip(trip_id):
 @app.route('/my_trips')
 @login_required
 def my_trips():
-    users_crew = Crew.query.filter_by(id=current_user.crew_id).first_or_404()
-    return render_template('trip/my_trips.html', crew=users_crew)
+    trips = Trip.query.filter_by(crew_id=current_user.crew_id).all()
+    trips = sorted(trips, key=lambda t: t.start_datetime)
+    return render_template('trip/my_trips.html', crew=current_user.crew_id, trips=trips)

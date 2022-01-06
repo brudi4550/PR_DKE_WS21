@@ -54,7 +54,7 @@ def move_employee_to_crew():
     return redirect(url_for('manage_crews'))
 
 
-@app.route('/my_crew')
+@app.route('/my_crew', methods=['GET'])
 @login_required
 def my_crew():
     users_crew = Crew.query.filter_by(id=current_user.crew_id).first_or_404()

@@ -92,7 +92,7 @@ class Activity(db.Model):
 
 
 class Employee(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     ssn = db.Column(db.Integer, nullable=False)
     first_name = db.Column(db.String(64), nullable=False)
     last_name = db.Column(db.String(64), nullable=False)
