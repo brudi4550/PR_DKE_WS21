@@ -15,7 +15,6 @@ class LoginForm(FlaskForm):
 
 # TODO refactor registeruserform and edituserform
 class RegisterNewUserForm(FlaskForm):
-    id = IntegerField('Mitarbeiter ID', validators=[DataRequired()])
     ssn = IntegerField('Sozialversicherungsnummer', validators=[DataRequired()])
     first_name = StringField('Vorname', validators=[DataRequired()])
     last_name = StringField('Nachname', validators=[DataRequired()])
@@ -31,11 +30,6 @@ class RegisterNewUserForm(FlaskForm):
     password2 = PasswordField('Passwort wiederholen', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Benutzer hinzufügen')
 
-    def validate_id(self, id):
-        employee = Employee.query.filter_by(id=id.data).first()
-        if employee is not None:
-            raise ValidationError('Mitarbeiter ID existiert bereits.')
-
     def validate_ssn(self, ssn):
         employee = Employee.query.filter_by(ssn=ssn.data).first()
         if employee is not None:
@@ -43,7 +37,6 @@ class RegisterNewUserForm(FlaskForm):
 
 
 class EditEmployeeForm(FlaskForm):
-    id = IntegerField('Mitarbeiter ID', validators=[DataRequired()])
     ssn = IntegerField('Sozialversicherungsnummer', validators=[DataRequired()])
     first_name = StringField('Vorname', validators=[DataRequired()])
     last_name = StringField('Nachname', validators=[DataRequired()])

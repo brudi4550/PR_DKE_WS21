@@ -172,4 +172,3 @@ def update_timetable_remotely():
             return render_template('general/update_timetable.html', successful=True, added_count=added_count,
                                    deleted_count=deleted_count), 200
     return render_template('general/update_timetable.html', successful=False), 500
-
