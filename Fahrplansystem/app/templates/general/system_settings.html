@@ -4,10 +4,10 @@
 {% block app_content %}
 <h1>Systemeinstellungen</h1>
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
         <div class="panel panel-default">
             <div class="panel-body">
-                Der Fahrplan wird automatisch bei Start des Systems überprüft (maximal aber 1 mal täglich).
+                <b>Der Fahrplan wird täglich um 02:00 Uhr automatisch aktualisiert.</b>
             </div>
         </div>
         <div class="panel panel-default">
@@ -37,43 +37,79 @@
                 </form>
             </div>
         </div>
-        <table class="table table-hover rushhours">
-            <tr>
-                <th>{{ rushhour_form.start_time.label }}</th>
-                <th>{{ rushhour_form.end_time.label }}</th>
-                <th class="text-center">Hinzufügen</th>
-            </tr>
-            <tr>
-                <form action="" method="post">
-                    {{ rushhour_form.hidden_tag() }}
-                    <td>{{ rushhour_form.start_time() }}</td>
-                    <td>{{ rushhour_form.end_time() }}</td>
-                    <td class="text-center">{{ rushhour_form.submit() }}</td>
-                </form>
-            </tr>
-            <tr>
-                <th>Stoßzeit-Start</th>
-                <th>Stoßzeit-Ende</th>
-                <th class="text-center">Stoßzeit bearbeiten</th>
-                <th class="text-center">Stoßzeit löschen</th>
-            </tr>
-            {% for rushhour in rushhours %}
-            <tr class="rushhour" rushhour_id="{{ rushhour.id }}">
-                <td>{{ rushhour.start_time.strftime('%H:%M') }}</td>
-                <td>{{ rushhour.end_time.strftime('%H:%M') }}</td>
-                <td class="text-center">
-                    <a href="/edit_rushhour/{{ rushhour.id }}">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                    </a>
-                </td>
-                <td class="text-center">
-                    <button class="delete_rushhour" rushhour_id="{{ rushhour.id }}">
-                        <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
-                    </button>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="panel panel-default">
+            <div class="panel-heading">Stoßzeit zu Fahrt hinzufügen</div>
+            <div class="panel-body">
+                <table class="table table-hover rushhours">
+                    <tr>
+                        <th>{{ rushhour_form.start_time.label }}</th>
+                        <th>{{ rushhour_form.end_time.label }}</th>
+                        <th>{{ rushhour_form.tour_ids.label }}</th>
+                        <th class="text-center">Hinzufügen</th>
+                    </tr>
+                    <tr>
+                        <form action="" method="post">
+                            {{ rushhour_form.hidden_tag() }}
+                            <td>{{ rushhour_form.start_time() }}</td>
+                            <td>{{ rushhour_form.end_time() }}</td>
+                            <td>{{ rushhour_form.tour_ids() }}</td>
+                            <td class="text-center">{{ rushhour_form.submit() }}</td>
+                        </form>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        </hr>
+        <div class="panel panel-default">
+            <div class="panel-heading">Stoßzeiten aller Fahrten</div>
+            <div class="panel-body">
+                <table class="table table-hover" style="padding: 10px">
+                    <tr>
+                        <th>Fahrt-ID</th>
+                        <th>Start</th>
+                        <th>Ziel</th>
+                        <th>Stoßzeiten</th>
+                    </tr>
+                    {% for tour in all_tours %}
+                    <tr>
+                        <td>{{ tour.id }}</td>
+                        <td>{{ tour.start }}</td>
+                        <td>{{ tour.end }}</td>
+                        <td>
+                            {% if tour.rushhours.all() | length > 0 %}
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Stoßzeit-Start</th>
+                                    <th>Stoßzeit-Ende</th>
+                                    <th class="text-center">Stoßzeit bearbeiten</th>
+                                    <th class="text-center">Stoßzeit löschen</th>
+                                </tr>
+                                {% for rushhour in tour.rushhours %}
+                                <tr class="rushhour" rushhour_id="{{ rushhour.id }}">
+                                    <td>{{ rushhour.start_time.strftime('%H:%M') }}</td>
+                                    <td>{{ rushhour.end_time.strftime('%H:%M') }}</td>
+                                    <td class="text-center">
+                                        <a href="/edit_rushhour/{{ rushhour.id }}">
+                                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="delete_rushhour" rushhour_id="{{ rushhour.id }}">
+                                            <span class="glyphicon glyphicon-remove red" aria-hidden="true"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            {% else %}
+                            Keine Stoßzeiten für diese Fahrt definiert.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

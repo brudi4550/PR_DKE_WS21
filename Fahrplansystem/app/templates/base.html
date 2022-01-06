@@ -36,6 +36,7 @@
                           <li><a href="http://127.0.0.1:5003">Ticketsystem</a></li>
                         </ul>
                     </li>
+                    <li><a href="{{ url_for('system_settings') }}">Einstellungen</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}

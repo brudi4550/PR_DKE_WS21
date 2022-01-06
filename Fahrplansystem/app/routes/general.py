@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, session, R
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import desc, asc
 from app import admin_required
-from app.forms import LoginForm, RushhourForm, SystemForm
+from app.forms import LoginForm, AddRushhourForm, EditRushhourForm, SystemForm
 from app.models import *
 
 
@@ -70,15 +70,16 @@ def system_settings():
     sys_form = SystemForm()
     if request.method == 'GET':
         sys_form.days_to_keep_old_trips.data = sys.days_to_keep_old_trips
-    rushhours = sys.rushhours
-    rushhour_form = RushhourForm()
+    all_tours = Tour.query.all()
+    rushhour_form = AddRushhourForm()
     rushhour_form.submit.label.text = '+'
     if sys_form.validate_on_submit():
         sys.days_to_keep_old_trips = sys_form.days_to_keep_old_trips.data
         db.session.commit()
         redirect(url_for('system_settings'))
     if rushhour_form.validate_on_submit():
-        r = Rushhour()
+        tour_ids = rushhour_form.tour_ids.data.split(",")
+        tour_ids = [int(x) for x in tour_ids]
         start_time_date = datetime(year=2021,
                                    month=1,
                                    day=1,
@@ -89,21 +90,32 @@ def system_settings():
                                  day=1,
                                  hour=rushhour_form.end_time.data.hour,
                                  minute=rushhour_form.end_time.data.minute)
-        r.start_time = start_time_date
-        r.end_time = end_time_date
-        r.system_id = 1
-        db.session.add(r)
-        db.session.commit()
+        for tour_id in tour_ids:
+            tour = Tour.query.filter_by(id=tour_id).first()
+            if tour is None:
+                continue
+            r = Rushhour()
+            r.start_time = start_time_date
+            r.end_time = end_time_date
+            r.tour_id = tour.id
+            db.session.add(r)
+            db.session.commit()
+        if len(tour_ids) > 1:
+            append_activity(f'Stoßzeit zu den Fahrten {rushhour_form.tour_ids.data}'
+                            f' (Beginn: {start_time_date.time()}, Ende: {end_time_date.time()}) hinzugefügt')
+        else:
+            append_activity(f'Stoßzeit zur Fahrt {tour_ids[0]} '
+                            f'(Beginn: {start_time_date.time()}, Ende: {end_time_date.time()}) hinzugefügt')
         redirect(url_for('system_settings'))
     return render_template('general/system_settings.html', sys=sys, sys_form=sys_form,
-                           rushhours=rushhours, rushhour_form=rushhour_form)
+                           all_tours=all_tours, rushhour_form=rushhour_form)
 
 
 @app.route('/edit_rushhour/<rushhour_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_rushhour(rushhour_id):
-    form = RushhourForm()
+    form = EditRushhourForm()
     form.submit.label.text = 'Stoßzeit speichern'
     rushhour = Rushhour.query.filter_by(id=rushhour_id).first_or_404()
     if request.method == 'GET':
@@ -151,8 +163,8 @@ def update_timetable_route():
     added_count, deleted_count = update_timetable()
     added_count_d = 'Durchführung' if added_count == 0 else 'Durchführungen'
     deleted_count_d = 'Durchführung' if deleted_count == 0 else 'Durchführungen'
-    append_activity(f'Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
-    append_activity(f'Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
+    append_activity(f'Manuelle Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
+    append_activity(f'Manuelle Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
     return Response(status=200)
 
 
@@ -167,8 +179,8 @@ def update_timetable_remotely():
             added_count, deleted_count = update_timetable()
             added_count_d = 'Durchführung' if added_count == 0 else 'Durchführungen'
             deleted_count_d = 'Durchführung' if deleted_count == 0 else 'Durchführungen'
-            append_activity(f'Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
-            append_activity(f'Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
+            append_activity(f'Automatische Fahrplanüberprüfung: {added_count} {added_count_d} hinzugefügt')
+            append_activity(f'Automatische Fahrplanüberprüfung: {deleted_count} {deleted_count_d} entfernt')
             return render_template('general/update_timetable.html', successful=True, added_count=added_count,
                                    deleted_count=deleted_count), 200
     return render_template('general/update_timetable.html', successful=False), 500

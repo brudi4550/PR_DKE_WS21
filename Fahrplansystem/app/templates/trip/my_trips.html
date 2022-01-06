@@ -4,24 +4,22 @@
 <h1>Meine zugeteilten Durchführungen</h1>
     <div class="row">
        <div class="panel panel-primary">
-           <div class="panel-heading">Alle Durchführungen für Bordpersonalteam {{ crew.id }}</div>
+           <div class="panel-heading">Alle Durchführungen für Bordpersonalteam {{ crew }}</div>
            <div class="panel-body">
                <div class="col-md-10">
                    <table class="table table-hover">
                        <tr>
-                           <th>Durchführungs-ID</th>
                            <th>Datum</th>
-                           <th>Zeit</th>
+                           <th>Abfahrtszeit</th>
                            <th>Von</th>
                            <th>Nach</th>
                        </tr>
-                       {% for trip in crew.trips %}
+                       {% for trip in trips %}
                        <tr>
-                           <td>{{ trip.id }}</td>
-                           <td>{{ trip.date }}</td>
-                           <td>{{ trip.time }}</td>
-                           <td>{{ trip.start }}</td>
-                           <td>{{ trip.end }}</td>
+                           <td>{{ trip.start_datetime.date().strftime('%d.%m.%Y')}}</td>
+                           <td>{{ trip.start_datetime.time().strftime('%H:%M')}}</td>
+                           <td>{{ trip.tour.start }}</td>
+                           <td>{{ trip.tour.end }}</td>
                        </tr>
                        {% endfor %}
                    </table>

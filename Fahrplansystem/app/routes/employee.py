@@ -63,14 +63,12 @@ def employee(id):
     emp = Employee.query.filter_by(id=id).first_or_404()
     form = EditEmployeeForm()
     if request.method == 'GET':
-        form.id.data = emp.id
         form.ssn.data = emp.ssn
         form.first_name.data = emp.first_name
         form.last_name.data = emp.last_name
         form.employee_type.data = emp.employee_type
         form.crew_id.data = emp.crew_id
     if form.validate_on_submit():
-        emp.id = form.id.data
         emp.ssn = form.ssn.data
         emp.first_name = form.first_name.data
         emp.last_name = form.last_name.data

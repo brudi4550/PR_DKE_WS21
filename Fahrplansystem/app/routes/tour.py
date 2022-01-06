@@ -13,6 +13,7 @@ from app.routes.general import append_activity
 @admin_required
 def add_tour():
     form = TourForm()
+    form.submit.label.text = 'Fahrt hinzufügen'
     get_route_choices(form)
     get_train_choices(form)
     if form.validate_on_submit():
@@ -24,6 +25,7 @@ def add_tour():
         tour.rushHourMultiplicator = form.rush_hour_multiplicator.data
         db.session.add(tour)
         db.session.commit()
+        append_activity(f'Fahrt {tour.start} - {tour.end} hinzugefügt.')
         flash('Fahrt erfolgreich hinzugefügt')
     return render_template('tour/add_tour.html', form=form)
 
@@ -44,7 +46,7 @@ def delete_tour(id):
     if to_be_deleted is not None:
         db.session.delete(to_be_deleted)
         db.session.commit()
-        append_activity(f'Fahrt {to_be_deleted.id} {to_be_deleted.start}-{to_be_deleted.end} wurde gelöscht.')
+        append_activity(f'Fahrt {to_be_deleted.start}-{to_be_deleted.end} wurde gelöscht.')
         return render_template('tour/manage_tours.html'), 200
     else:
         return render_template('tour/manage_tours.html'), 500
@@ -56,6 +58,7 @@ def delete_tour(id):
 def edit_tour(id):
     tour = Tour.query.filter_by(id=id).first()
     form = TourForm()
+    form.submit.label.text = 'Fahrt speichern'
     get_route_choices(form)
     get_train_choices(form)
     if request.method == 'GET':

@@ -57,9 +57,6 @@ class TourForm(FlaskForm):
     route_choice = SelectField('Strecke auswählen', validators=[DataRequired()])
     train_choice = SelectField('Zug auswählen', validators=[DataRequired()])
     rush_hour_multiplicator = DecimalField('Stoßzeit-Multiplikator', validators=[DataRequired()])
-    # interval = IntegerField('Im Intervall von (Minuten):', default=0)
-    # intervalFrom = IntegerField('Von Uhrzeit:', default=0)
-    # intervalTo = IntegerField('Bis Uhrzeit:', default=0)
     submit = SubmitField()
 
 
@@ -98,7 +95,14 @@ class IntervalTripForm(FlaskForm):
     submit = SubmitField('Intervall Durchführung hinzufügen')
 
 
-class RushhourForm(FlaskForm):
+class AddRushhourForm(FlaskForm):
+    start_time = TimeField('Von', validators=[DataRequired()])
+    end_time = TimeField('Bis', validators=[DataRequired()])
+    tour_ids = StringField('Zugeordnete Fahrten', validators=[DataRequired()])
+    submit = SubmitField('Hinzufügen', validators=[DataRequired()])
+
+
+class EditRushhourForm(FlaskForm):
     start_time = TimeField('Von', validators=[DataRequired()])
     end_time = TimeField('Bis', validators=[DataRequired()])
     submit = SubmitField('Hinzufügen', validators=[DataRequired()])
