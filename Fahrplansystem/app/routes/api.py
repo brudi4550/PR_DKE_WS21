@@ -7,7 +7,7 @@ from app import app
 
 
 def get_route_choices(form):
-    routes_json = json.loads(requests.get(url_for('get_routes', _external=True)).text)
+    routes_json = json.loads(requests.get(url_for('get_routes', _external=True), verify=False).text)
     routes_choices = []
     for route in routes_json['routes']:
         value_and_label = route.get('start') + '-' + route.get('ende')
@@ -16,7 +16,7 @@ def get_route_choices(form):
 
 
 def get_train_choices(form):
-    trains_json = json.loads(requests.get(url_for('get_trains', _external=True)).text)
+    trains_json = json.loads(requests.get(url_for('get_trains', _external=True), verify=False).text)
     train_choices = []
     for train in trains_json['trains']:
         value_and_label = train.get('model') + ' ' + train.get('modelNr')
@@ -29,13 +29,29 @@ def get_train_choices(form):
 def get_routes():
     routes = {
         "routes": [{
-            "start": "Linz",
-            "ende": "Wien"
-        },
+                "start": "Linz",
+                "ende": "Wien"
+            },
+            {
+                "start": "Wien",
+                "ende": "Linz"
+            },
             {
                 "start": "Salzburg",
                 "ende": "Innsbruck"
-            }
+            },
+            {
+                "start": "Innsbruck",
+                "ende": "Salzburg"
+            },
+            {
+                "start": "Graz",
+                "ende": "Wien"
+            },
+            {
+                "start": "Wien",
+                "ende": "Graz"
+            },
         ]
     }
     return make_response(jsonify(routes))
@@ -45,13 +61,33 @@ def get_routes():
 def get_trains():
     trains = {
         "trains": [{
-            "model": "ICE",
-            "modelNr": "391"
-        },
+                "model": "Railjet",
+                "modelNr": "391"
+            },
             {
                 "model": "REX",
                 "modelNr": "981"
-            }
+            },
+            {
+                "model": "Eurocity",
+                "modelNr": "114"
+            },
+            {
+                "model": "Intercity",
+                "modelNr": "289"
+            },
+            {
+                "model": "Nightjet",
+                "modelNr": "545"
+            },
+            {
+                "model": "Cityjet",
+                "modelNr": "831"
+            },
+            {
+                "model": "Eurocity",
+                "modelNr": "103"
+            },
         ]
     }
     return make_response(jsonify(trains))

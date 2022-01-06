@@ -14,13 +14,12 @@ from app.routes.general import append_activity
 def add_employee():
     form = RegisterNewUserForm()
     if form.validate_on_submit():
-        e = Employee(id=form.id.data,
-                     ssn=form.ssn.data,
-                     first_name=form.first_name.data,
-                     last_name=form.last_name.data,
-                     employee_type=form.employee_type.data,
-                     crew_id=form.crew_id.data
-                     )
+        e = Employee()
+        e.ssn = form.ssn.data
+        e.first_name = form.first_name.data
+        e.last_name = form.last_name.data
+        e.employee_type = form.employee_type.data
+        e.crew_id = form.crew_id.data
         e.set_password(form.password.data)
         enteredCrew = Crew.query.filter_by(id=form.crew_id.data).first()
         if enteredCrew is None and form.crew_id.data != "":

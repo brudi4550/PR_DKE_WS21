@@ -62,8 +62,12 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
     app.logger.info('Fahrplansystem gestartet')
 
-timetable_system = System.query.get(1)
-if timetable_system is None:
-    timetable_system = System()
-    db.session.add(timetable_system)
-    db.session.commit()
+
+if 'system' not in db.metadata.tables.keys():
+    db.create_all()
+else:
+    timetable_system = System.query.get(1)
+    if timetable_system is None:
+        timetable_system = System()
+        db.session.add(timetable_system)
+        db.session.commit()

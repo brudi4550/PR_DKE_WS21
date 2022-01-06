@@ -17,7 +17,7 @@ class Rushhour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime)
-    system_id = db.Column(db.Integer, db.ForeignKey('system.id'))
+    tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
 
 
 def update_timetable():
@@ -80,7 +80,6 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     last_system_check = db.Column(db.DateTime)
     days_to_keep_old_trips = db.Column(db.Integer, default=0)
-    rushhours = db.relationship('Rushhour', backref='system', cascade='all,delete', lazy='dynamic')
 
 
 class Activity(db.Model):
@@ -93,7 +92,7 @@ class Activity(db.Model):
 
 
 class Employee(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ssn = db.Column(db.Integer, nullable=False)
     first_name = db.Column(db.String(64), nullable=False)
     last_name = db.Column(db.String(64), nullable=False)
@@ -187,6 +186,7 @@ class Tour(db.Model):
     intervals = db.relationship('Interval', backref='tour', cascade='all,delete', lazy='dynamic')
     rushHourMultiplicator = db.Column(db.Float, nullable=False)
     trips = db.relationship('Trip', backref='tour', cascade='all,delete', lazy='dynamic')
+    rushhours = db.relationship('Rushhour', backref='tour', cascade='all,delete', lazy='dynamic')
 
     def trip_count(self):
         single_trips = self.trips.count()
