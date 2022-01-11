@@ -2,8 +2,10 @@
 
 {% block app_content %}
     <h2>Neuen Benutzer erstellen:</h2>
-    <h4>Wählen Sie die Art des Benutzers</h4>
-    <a href="{{ url_for('registerUser', name='Administrator') }}">Administrator</a><br><br>
-    <a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Wartungspersonal</a><br><br>
-    <a href="{{ url_for('registerUser', name='Zugpersonal') }}">Zugpersonal</a>
+    <h4>Wählen Sie die Art des Benutzers</h4><br>
+    <ul class="list-unstyled">
+        <li> <a href="{{ url_for('registerUser', name='Administrator') }}">Administrator</a> </li><br>
+        <li> <a href="{{ url_for('registerUser', name='Wartungspersonal') }}">Wartungspersonal</a> </li><br>
+        <li> <a href="{{ url_for('registerUser', name='Zugpersonal') }}">Zugpersonal</a> </li>
+    </ul>
 {% endblock %}

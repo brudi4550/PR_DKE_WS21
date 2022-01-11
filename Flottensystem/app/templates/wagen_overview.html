@@ -3,7 +3,7 @@
 
 {% block app_content %}
     {% if triebwagen == [] and personenwagen == [] %}
-        <p>Es sind keine Waggons verfügbar!</p>
+        <p>Es sind keine Waggons vorhanden!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
     {% else %}
         <h3>Waggonübersicht:</h3><br>

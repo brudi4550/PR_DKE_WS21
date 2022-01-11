@@ -2,15 +2,17 @@
 
 {% block app_content %}
     <h4>Hallo, {{ current_user.vorname }}! Wählen Sie eine Option aus:</h4>
-    <a href="{{ url_for('waggon') }}">Neue Waggons erstellen</a><br>
-    <a href="{{ url_for('updateWaggon') }}">Bestehende Waggons bearbeiten/löschen</a><br>
-    <a href="{{ url_for('createTrain') }}">Neuen Zug erstellen</a><br>
-    <a href="{{ url_for('updateTrain') }}">Bestehende Züge bearbeiten/löschen</a><br>
-    <a href="{{ url_for('register') }}">Neuen Benutzer erstellen</a><br>
-    <a href="{{ url_for('updateUser') }}">Bestehende Benutzer bearbeiten/löschen</a><br>
-    <a href="{{ url_for('addMaintenance') }}">Neue Wartung hinzufügen</a><br>
-    <a href="{{ url_for('updateMaintenance') }}">Bestehende Wartungen bearbeiten/löschen</a><br>
-    <a href="{{ url_for('trainOverview') }}">Zugübersicht</a><br>
-    <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a><br>
-    <a href="{{ url_for('wartungOverview') }}">Wartungsübersicht</a><br>
+    <ul class="list-unstyled">
+        <li> <a href="{{ url_for('waggon') }}">Neue Waggons erstellen</a> </li>
+        <li> <a href="{{ url_for('updateWaggon') }}">Bestehende Waggons bearbeiten/löschen</a> </li>
+        <li> <a href="{{ url_for('createTrain') }}">Neuen Zug erstellen</a> </li>
+        <li> <a href="{{ url_for('updateTrain') }}">Bestehende Züge bearbeiten/löschen</a> </li>
+        <li> <a href="{{ url_for('register') }}">Neuen Benutzer erstellen</a> </li>
+        <li> <a href="{{ url_for('updateUser') }}">Bestehende Benutzer bearbeiten/löschen</a> </li>
+        <li> <a href="{{ url_for('addMaintenance') }}">Neue Wartung hinzufügen</a> </li>
+        <li> <a href="{{ url_for('updateMaintenance') }}">Bestehende Wartungen bearbeiten/löschen</a> </li>
+        <li> <a href="{{ url_for('trainOverview') }}">Zugübersicht</a> </li>
+        <li> <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a> </li>
+        <li> <a href="{{ url_for('wartungOverview') }}">Wartungsübersicht</a> </li>
+    </ul>
 {% endblock %}

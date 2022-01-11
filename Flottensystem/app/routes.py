@@ -173,17 +173,44 @@ def deleteUser(mitarbeiterNr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Benutzer löschen zu können!')
         return redirect(url_for('home_personal'))
+
+    mitarbeiter = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
+    if mitarbeiter is None: # Wird der Mitarbeiter nicht gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben.
+        flash('Löschen eines nicht vorhandenen Mitarbeiters nicht möglich')
+        return redirect(url_for('updateUser'))
+
+    # Da man Administratoren auch nicht zu viele Rechte geben will (da dies dann das Potential zu einem Machtmissbrauch hat), dürfen Administratoren
+    # keine anderen Administratoren löschen, sich selbst jedoch schon. In der folgenden Überprüfung wird verhindert, dass ein Administrator einen
+    # anderen Administrators löscht.
+    elif type(mitarbeiter) == Administrator and mitarbeiter.mitarbeiterNr != current_user.mitarbeiterNr:
+        flash('Löschen eines anderen Administrators ist nicht erlaubt!')
+        return redirect(url_for('updateUser'))
+
     form=EmptyForm()
+
     if form.validate_on_submit():
-        mitarbeiter = Mitarbeiter.query.filter_by(mitarbeiterNr=mitarbeiterNr).first()
-        if mitarbeiter is None: # Wird der Mitarbeiter nicht gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
-            flash('Löschen eines nicht vorhandenen Mitarbeiters nicht möglich')
-            return redirect(url_for('updateUser'))
         db.session.delete(mitarbeiter)
+        ''' Es wird in der nachfolgenden if-Abfrage überprüft, ob es sich beim gelöschten Mitarbeiter um einen Wartungspersonalmitarbeiter
+            handelt. Ist dies der Fall, dann werden alle Wartungen von diesem Wartungspersonalmitarbeiter überprüft (falls welche vorhanden sind) '''
+        if type(mitarbeiter) == Wartungspersonal:
+            wartungen = mitarbeiter.wartungen.all()
+            if wartungen is not None:
+                ''' In diesen Wartungen von dem gelöschten Wartungspersonalmitarbeiter wird überprüft, ob noch Mitarbeiter vorhanden sind. Falls 
+                    nicht, dann wird die Wartung ebenfalls gelöscht, da einer Wartung Wartungspersonalmitarbeiter zugeteilt sein müssen. Dies 
+                    musste so realisiert werden, da durch das setzen eines Cascade-Constraints (cascade="all, delete") in der  Klasse "Wartungspersonal" 
+                    in "models.py" bewirken würde, dass das Löschen eines Wartungspersonalmitarbeiters alle Wartungen löscht, in der dieser zugeteilt
+                    war, auch wenn in den Wartungen noch weitere Wartungspersonalmitarbeiter zugeteilt worden wären. Also wird durch diese Abfrage 
+                    sichergestellt, dass eine Wartung erst dann gelöscht wird, wenn diesem keine Wartungspersonalmitarbeiter zugeteilt sind '''
+                for wartung in wartungen:
+                    if wartung.zugeordnetes_wartungspersonal() is None:
+                        db.session.delete(wartung)
+
         db.session.commit()
-        if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None: # Es wird hier kontrolliert ob der Administrator sich selbst gelöscht hat
+        ''' Es wird hier überprüft, ob der Administrator einen anderen User als sich selbst gelöscht hat '''
+        if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is not None:
             flash('Löschen des Mitarbeiters {} {} mit der Mitarbeiternummer {} wurde erfolgreich durchgeführt'.format(mitarbeiter.vorname, mitarbeiter.nachname, mitarbeiterNr))
             return redirect(url_for('updateUser'))
+        # Kann der Administrator sich selbst in der vorherigen Abfrage nicht finden, dann heißt es, dass dieser sich selbst gelöscht hat.
         else:
             flash('Sie haben Ihr Profil erfolgreich gelöscht!')
             return redirect(url_for('login'))
@@ -274,6 +301,7 @@ def editWaggon(nr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None: # Auch hier werden User, die nicht Administrator sind, in die Personal-Startseite weitergeleitet
         flash('Sie müssen als Administrator angemeldet sein, um einen bestehenden Waggon bearbeiten zu können!')
         return redirect(url_for('home_personal'))
+
     wagen = Wagen.query.filter_by(nr=nr).first()
     if wagen is None:    # Wird unter der übergebenen Wagennummer kein Waggon gefunden, so wird der Benutzer darüber informiert
         flash('Es wurde kein Waggon unter der Wagennummer {} gefunden!'.format(nr))
@@ -284,6 +312,7 @@ def editWaggon(nr):
     else:
         typ = 'Personenwagen'
         form = EditPersonenwagenForm(wagen.nr)
+
     if form.validate_on_submit():
         wagen.nr = form.nr.data
         wagen.spurweite = form.spurweite.data
@@ -295,6 +324,7 @@ def editWaggon(nr):
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateWaggon'))
+
     elif request.method == 'GET':   # Ist die Abfragemethode 'GET', dann wird das Formular mit den Daten des jeweiligen Waggons angezeigt
         form.nr.data = wagen.nr
         form.spurweite.data = wagen.spurweite
@@ -303,6 +333,7 @@ def editWaggon(nr):
         else:
             form.sitzanzahl.data = wagen.sitzanzahl
             form.maximalgewicht.data = wagen.maximalgewicht
+
     return render_template('edit_wagen.html', title='Wagen bearbeiten', form=form, typ=typ)
 
 @app.route('/Wagen_löschen/<nr>', methods=['POST'])
@@ -311,15 +342,27 @@ def deleteWaggon(nr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Waggon löschen zu können!')
         return redirect(url_for('home_personal'))
+
     form = EmptyForm()
     if form.validate_on_submit():
         wagen = Wagen.query.filter_by(nr=nr).first()
         if wagen is None: # Wird kein Wagggon gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
-            flash('Löschen eines nicht vorhandenen Waggons nicht möglich')
+            flash('Löschen eines nicht vorhandenen Waggons nicht möglich!')
             return redirect(url_for('updateWaggon'))
+
         db.session.delete(wagen)
+        ''' Folgende Vorgehensweise wird durchgeführt: Es wird überprüft, ob dem jeweiligen Zug noch ein Personenwagen zugeordnet
+            ist. Ist dies nicht der Fall, dann wird der gesamte Zug gelöscht (da ein Zug einen Personenwagen haben muss). Dieser 
+            "Umweg" musste hier so realisiert werden, da durch das setzen eines Cascade-Constraints (cascade="all, delete") in der 
+            Klasse "Personenwagen" in "models.py" bewirken würde, dass das Löschen eines Personenwagens den Zug löscht, auch wenn
+            der Zug noch aus weiteren Personenwaggons bestehen würde. Also wird hier sichergestellt, dass der Zug nur dann gelöscht
+            wird, wenn der letzte Personenwagen von diesem entfernt wird. '''
+        if type(wagen) == Personenwagen:
+            zug = Zug.query.filter_by(nr=wagen.zugNr).first()
+            if zug is not None and zug.personenwagen.first() is None:
+                db.session.delete(zug)
         db.session.commit()
-        flash('Löschen des Waggons mit der Wagennummer {} wurde erfolgreich durchgeführt'.format(nr))
+        flash('Löschen des Waggons mit der Wagennummer {} wurde erfolgreich durchgeführt!'.format(nr))
         return redirect(url_for('updateWaggon'))
     else:
         return redirect(url_for('updateWaggon'))
@@ -331,14 +374,50 @@ def createTrain():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen Zug erstellen zu können!')
         return redirect(url_for('home_personal'))
+
+    triebwagen = Triebwagen.query.all()
+    personenwagen = Personenwagen.query.all()
     form = ZugForm()
+    form.triebwagen_nr.choices = [(t.nr, str(t.nr) + " (Spurweite: " + str(t.spurweite) + " mm)") for t in triebwagen]
+
     if form.validate_on_submit():
-        zug = Zug(nr=form.nr.data, name=form.name.data)
+        ''' Für die Erläuterung der Vorgehensweise in dieser View Function, siehe nachfolgende View Function "addMaintenance",  
+            da dessen Vorgehensweise ähnlich mit der von dieser View Function ist. '''
+        personenwagenListe = request.form.getlist('personenwagenCheckbox')
+        if personenwagenListe == []:
+            flash('Fehler: Zu einem Zug muss mindestens ein Personenwagen zugeordnet werden!')
+            return redirect(url_for('createTrain'))
+
+        waggons = []
+        for liste in personenwagenListe:
+            wagen = Personenwagen.query.filter_by(nr=liste).first()
+            ''' In folgender Abfrage wird überprüft, ob ein ausgewählter Personenwagen schon einem Zug zugeordnet ist.
+                Ist dies der Fall wird der User durch "flash" darüber informiert und muss die Auswahl anpassen. '''
+            if wagen.zug is not None:
+                flash('Fehler: Der Personenwagen mit der Wagennummer {} ist bereits einem Zug zugeordnet!'.format(wagen.nr))
+                return redirect(url_for('createTrain'))
+            ''' Die ausgewählten Personenwaggons werden zur der Liste "waggons" hinzugefügt, welches dann der Variable 
+                "personenwagen" von der Klasse Zug (also dem jeweiligen Zug) zugeteilt wird. '''
+            waggons.append(wagen)
+
+        '''Als nächstes wird die Spurweite des augewählten Triebwagen in die Variable "spurweite" eingespeichert '''
+        spurweite = Triebwagen.query.filter_by(nr=form.triebwagen_nr.data).first().spurweite
+        ''' Die Variable "spurweite" wird nun mit allen anderen Spurweiten verglichen (also mit den Spurweiten der
+            ausgewählten Personenwaggons bzw. mit dem ausgewählten Personenwagen, da man auch nur ein Personenwagen
+            auswählen kann). Hat ein Wagen nicht dieselbe Spurweite wie in der Variable "spurweite", dann wird der 
+            User durch "flash" darüber informiert, wodurch dieser dann die Auswahl anpassen kann. '''
+        for w in waggons:
+            if spurweite != w.spurweite:
+                flash('Die Spurweiten der ausgewählten Waggons stimmen nicht überein! Bitte wählen Sie Waggons mit einer einheitlichen Spurweite aus.')
+                return redirect(url_for('createTrain'))
+
+        zug = Zug(nr=form.nr.data, name=form.name.data, triebwagen_nr=form.triebwagen_nr.data, personenwagen=waggons)
         db.session.add(zug)
         db.session.commit()
         flash('Zug wurde erfolgreich erstellt!')
         return redirect(url_for('createTrain'))
-    return render_template('create_zug.html', title='Zug erstellen', form=form)
+
+    return render_template('create_zug.html', title='Zug erstellen', triebwagen=triebwagen, personenwagen=personenwagen, form=form)
 
 @app.route('/Zug_bearbeiten')
 @login_required
@@ -350,27 +429,63 @@ def updateTrain():
     form = EmptyForm()
     return render_template('edit_zug_overview.html', title='Zug bearbeiten', zug=zug, form=form)
 
+''' In dieser View Function werden nur Abweichungen von der View Function "createTrain" erklärt. Für weitere
+    Erklärung, siehe View Function "createTrain". '''
 @app.route('/Zug_bearbeiten/<nr>', methods=['GET', 'POST'])
 @login_required
 def editTrain(nr):
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um einen bestehenden Waggon bearbeiten zu können!')
         return redirect(url_for('home_personal'))
+
     zug = Zug.query.filter_by(nr=nr).first()
     if zug is None:
         flash('Es wurde kein Zug unter der Zugnummer {} gefunden!'.format(nr))
         return redirect(url_for('updateTrain'))
-    form = EditZugForm(zug.nr)
+
+    personenwagen = Personenwagen.query.all()
+    form = EditZugForm(zug.nr, zug.triebwagen_nr)
+    form.triebwagen_nr.choices = [(t.nr, str(t.nr) + " (Spurweite: " + str(t.spurweite) + " mm)") for t in Triebwagen.query.all()]
+
     if form.validate_on_submit():
+        personenwagenListe = request.form.getlist('personenwagenCheckbox')
+        if personenwagenListe == []:
+            flash('Fehler: Zu einem Zug muss mindestens ein Personenwagen zugeordnet werden!')
+            return redirect(url_for('editTrain', nr=nr))
+
+        waggons = []
+        for liste in personenwagenListe:
+            wagen = Personenwagen.query.filter_by(nr=liste).first()
+            ''' Hier wird durch "wagen.zugNr != zug.nr" noch zusätzlich überprüft, ob der ausgewählte Personenwagen einem 
+                einem anderen Zug als dem momentan zu bearbeitenden Zug zugeordnet ist. Würde dieser Ausdruck fehlen, dann 
+                wäre der Schleifenausdruck auch dann True, wenn der Personenwagen dem zu bearbeitenden Zug zugeteilt wäre. '''
+            if wagen.zug is not None and wagen.zugNr != zug.nr:
+                flash('Fehler: Der Personenwagen mit der Wagennummer {} ist bereits einem Zug zugeordnet!'.format(wagen.nr))
+                return redirect(url_for('editTrain', nr=nr))
+            waggons.append(wagen)
+
+        spurweite = Triebwagen.query.filter_by(nr=form.triebwagen_nr.data).first().spurweite
+        for w in waggons:
+            if spurweite != w.spurweite:
+                flash('Die Spurweiten der ausgewählten Waggons stimmen nicht überein! Bitte wählen Sie Waggons mit einer einheitlichen Spurweite aus.')
+                return redirect(url_for('editTrain', nr=nr))
+
+        ''' Hier ist es wichtig, die nachfolgende Zuweisung der Zugnummer nach der ersten for-Schleife zu setzen, denn sonst wäre
+            die if-Bedingung in der for-Schleife immer True. '''
         zug.nr = form.nr.data
         zug.name = form.name.data
+        zug.triebwagen_nr = form.triebwagen_nr.data
+        zug.personenwagen = waggons
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateTrain'))
+
     elif request.method == 'GET':
         form.nr.data = zug.nr
         form.name.data = zug.name
-    return render_template('edit_zug.html', title='Zug bearbeiten', form=form)
+        form.triebwagen_nr.data = zug.triebwagen_nr
+
+    return render_template('edit_zug.html', title='Zug bearbeiten', zug=zug, personenwagen=personenwagen, form=form)
 
 @app.route('/Zug_löschen/<nr>', methods=['POST'])
 @login_required
@@ -379,6 +494,7 @@ def deleteTrain(nr):
         flash('Sie müssen als Administrator angemeldet sein, um einen Zug löschen zu können!')
         return redirect(url_for('home_personal'))
     form = EmptyForm()
+
     if form.validate_on_submit():
         zug = Zug.query.filter_by(nr=nr).first()
         if zug is None: # Wird kein Zug gefunden, so kann dieser auch nicht gelöscht werden. Diese Meldung wird dem User übergeben
@@ -398,35 +514,40 @@ def addMaintenance():
     if Administrator.query.filter_by(mitarbeiterNr=current_user.mitarbeiterNr).first() is None:
         flash('Sie müssen als Administrator angemeldet sein, um eine Wartung hinzufügen zu können!')
         return redirect(url_for('home_personal'))
+
     wartungspersonal = Wartungspersonal.query.all()
     zug = Zug.query.all()
     form = WartungForm()
     #form.mitarbeiterNr.choices = [(w, w.vorname) for w in wartungspersonal]
     form.zugNr.choices = [(z.nr, z.nr) for z in zug]
+
     if form.validate_on_submit():
         ''' Folgende Vorgehensweise wurde hier angewendet: Da es keine Implementierung von Checkboxen in wtforms gefunden wurde hat man einen etwas
             "unsauberen" Weg benutzt. In der Variable "wartungspersonal", sind alle Mitarbeiter der Klasse Wartungspersonal eingespeichert. Diese
             werden an das HTML-Dokument "create_wartung.html" übergeben, welches diese Mitarbeiter in Checkboxen (<input type="checkbox"...) ausgibt.
             Die Werte der Checkboxen werden an die nachfolgende Variable "wartungspersonalListe" übergeben. Würde in diesem Ausdruck nur "get" stehen 
             statt "getlist", so wird dann nur die erste angekreuzte Checkbox in die Variable eingefügt. Durch "getlist" wird also sichergestellt, dass 
-            eine Liste der angekreuzten Werte zurückkommt. Die Werte von diesen Checkboxen beinhalten die Mitarbeiternummer des jeweiligen Mitarbeiters
-            Nachfolgend werden diese Mitarbeiter durch die for-Schleife in die Assoziationstablle eingefügt bzw. werden diese Mitarbeiter der Variable
-            "wartungspersonal" von der Klasse "Wartung" (welche durch ein backref Argument in der Klasse Wartungspersonal definiert wurde) zugeteilt.
-            Durch diese Vorgehensweise sind jedoch auch die Nachteile erstichtlich: Die Vorteile von wtforms entfallen, also muss separat ein Error 
-            ausgegeben werden, welches in der nachfolgenden Abfrage gemacht wird. Dort wird kontrolliert, ob die übergebene Liste Leer ist, also keine
-            einzige Checkbox angekreuzt wurde. Dies wird dann dem User mitgeteilt. Ein weiterer Nachteil ist, dass diese Checkboxansicht zu unübersichtlich
-            sein kann. Hat man bspw. viele (z.B. 100) Wartungspersonalmitarbeiter, dann wäre die Checkboxliste sehr lang, was zur Unübersichtlichkeit
-            führen würde'''
+            eine Liste der angekreuzten Werte zurückkommt. Die Werte von diesen Checkboxen beinhalten die Mitarbeiternummer des jeweiligen Mitarbeiters.
+            Nachfolgend werden diese Mitarbeiter durch die for-Schleife in die Assoziationstablle eingefügt (indem auf die Methode "wartungspersonal_hinzufügen"
+            zugegriffen wird) bzw. werden diese Mitarbeiter der Variable "wartungspersonal" von der Klasse "Wartung" (welche durch ein backref Argument in der 
+            Klasse Wartungspersonal definiert wurde) zugeteilt. Durch diese Vorgehensweise sind jedoch auch die Nachteile erstichtlich: Die Vorteile von wtforms
+            entfallen, also muss separat ein Error ausgegeben werden, welches in der nachfolgenden Abfrage gemacht wird. Dort wird kontrolliert, ob die übergebene
+            Liste Leer ist, also keine einzige Checkbox angekreuzt wurde. Dies wird dann dem User mitgeteilt. Ein weiterer Nachteil ist, dass diese Checkboxansicht
+            zu unübersichtlich sein kann. Hat man bspw. viele (z.B. 100) Wartungspersonalmitarbeiter, dann wäre die Checkboxliste sehr lang, was zur 
+            Unübersichtlichkeit führen würde'''
         wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
         if wartungspersonalListe == []:
             flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
             return redirect(url_for('addMaintenance'))
         wartung = Wartung(wartungsNr=form.wartungsNr.data, von=form.von.data, bis=form.bis.data, zugNr=form.zugNr.data)
-        for liste in wartungspersonalListe:
-            wartung.wartungspersonal.append(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
         db.session.add(wartung)
+
+
+        for liste in wartungspersonalListe:
+            wartung.wartungspersonal_hinzufuegen(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
+
         db.session.commit()
-        flash('Wartung wurde erfolgreich erstellt!')
+        flash('Die Wartung mit der Wartungsnummer {} wurde erfolgreich erstellt!'.format(wartung.wartungsNr))
         return redirect(url_for('home_admin'))
     return render_template('create_wartung.html', title='Wartung hinzufügen', wartungspersonal=wartungspersonal, zug=zug, form=form)
 
@@ -440,6 +561,9 @@ def updateMaintenance():
     form = EmptyForm()
     return render_template('edit_wartung_overview.html', title='Wartung bearbeiten', wartung=wartung, form=form)
 
+
+''' In dieser View Function werden nur Änderungen dokumentiert. Für weitere Dokumentation des Codes in dieser View
+    Function, siehe "addMaintenance()". '''
 @app.route('/Wartung_bearbeiten/<wartungsNr>', methods=['GET', 'POST'])
 @login_required
 def editMaintenance(wartungsNr):
@@ -448,24 +572,69 @@ def editMaintenance(wartungsNr):
         return redirect(url_for('home_personal'))
     wartung = Wartung.query.filter_by(wartungsNr=wartungsNr).first()
     if wartung is None:
-        flash('Es wurde keine Wartung unter der Wartungsnummer {} gefunden!'.format(nr))
+        flash('Es wurde keine Wartung unter der Wartungsnummer {} gefunden!'.format(wartungsNr))
         return redirect(url_for('updateMaintenance'))
+
+    wartungspersonal = Wartungspersonal.query.all()
     form = EditWartungForm(wartung.wartungsNr)
     form.zugNr.choices = [(z.nr, z.nr) for z in Zug.query.all()]
+
     if form.validate_on_submit():
-        wartung.nr = form.wartungsNr.data
+        wartungspersonalListe = request.form.getlist('WartungspersonalCheckbox')
+        if wartungspersonalListe == []:
+            flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
+            return redirect(url_for('editMaintenance', wartungsNr=wartungsNr))
+        wartung.wartungsNr = form.wartungsNr.data
         wartung.von = form.von.data
         wartung.bis = form.bis.data
+        ''' Als nächstes wird von der zu ändernden Wartung auf die ursprünglich zugeteilten Wartungspersonalmitarbeiter (durch
+            Aufruf der Methode "zugeordnetes_wartungspersonal") zugegriffen. Diese Wartungspersonalmitarbeiter werden in der 
+            Variable "personal" eingespeichert. '''
+        personal = wartung.zugeordnetes_wartungspersonal().all()
+
+        ''' Folgende Vorgehensweise wird in der nachfolgenden Schleife durchgeführt: Da die Variable "personal" eine Liste der
+            Wartungspersonalmitarbeiter ist, wird durch den Ausdruck "for p in personal" über die Liste iteriert, um somit auf
+            die einzelnen Mitarbeiter zuzugreifen. Zu aller erst wird eine Variable "cnt" definiert. Danach wird über die aktualisierte
+            Liste der Wartungspersonalmitarbeiter iteriert (die aktualisierte Liste der Wartungspersonalmitarbeiter ist in der 
+            Variable "wartungspersonalListe" eingespeichert. Hierbei kann es sein dass neue Mitarbeiter hinzugefügt worden sind
+            oder auch Mitarbeiter, die der Wartung zugeteilt waren, entfernt worden sind). In dieser (inneren) Schleife wird überprüft,
+            ob der Mitarbeiter der ursprünglichen Liste der Wartungspersonalmitarbeiter ("personal") in der aktualisierten Liste 
+            ("wartungspersonalListe") vorhanden ist. Ist dies der Fall, dann wird die Variable "cnt" erhöht. Ist man nun fertig mit
+            der inneren Schleife, so wird die "cnt" Variable überprüft. Ist diese größer als 0 (es wäre auch richtig, wenn man
+            überprüfen würde, ob die "cnt" Variable genau den Wert 1 hat, da ein Mitarbeiter nur einmal in der Liste vorhanden sein
+            kann und "cnt" somit höchstens den Wert 1 haben kann), so wird durch continue auf die nächste Schleifeniteration gesprungen
+            und der Code darunter ignoriert. Hat jedoch "cnt" den Wert 0 (und es wurde auch somit der Wartungspersonalmitarbeiter von 
+            der ursprünglichen Liste nicht in der aktualisierten Liste gefunden), dann wird dieser Mitarbeiter von der Assoziationstabelle 
+            durch die Methode "wartungspersonal_entfernen" entfernt. Zusammengefasst dienen diese beiden Schleifen also zum entfernen
+            von Wartungspersonalmitarbeitern aus der jeweiligen Wartung, die im nachhinein beim Bearbeiten der Wartung durch die 
+            Checkbox wieder entfernt wurden (also das Hackerl entfernt wurde)'''
+        for p in personal:
+            cnt = 0
+            for liste in wartungspersonalListe:
+                if p.mitarbeiterNr == liste:
+                    cnt += 1
+            if cnt > 0:
+                continue
+            wartung.wartungspersonal_entfernen(p)
+
+        ''' In der folgenden Schleife werden die Wartungspersonalmitarbeiter (von der aktualisierten Liste "wartungspersonalListe")
+            in die Assoziationstabelle anhand der Methode "wartungspersonal_hinzufuegen" eingefügt. Diese Methode stellt sicher, dass
+            Mitarbeiter, dies sich schon in der Assoziationstabelle befinden, nicht noch einmal eingefügt werden. '''
+        for liste in wartungspersonalListe:
+            wartung.wartungspersonal_hinzufuegen(Wartungspersonal.query.filter_by(mitarbeiterNr=liste).first())
+
         wartung.zugNr = form.zugNr.data
         db.session.commit()
         flash('Änderungen wurden erfolgreich durchgeführt!')
         return redirect(url_for('updateMaintenance'))
+
     elif request.method == 'GET':
         form.wartungsNr.data = wartung.wartungsNr
         form.von.data = wartung.von
         form.bis.data = wartung.bis
         form.zugNr.data = wartung.zugNr
-    return render_template('edit_zug.html', title='Wartung bearbeiten', form=form)
+
+    return render_template('edit_wartung.html', title='Wartung bearbeiten', wartung=wartung, wartungspersonal=wartungspersonal, form=form)
 
 @app.route('/Wartung_löschen/<wartungsNr>', methods=['POST'])
 @login_required

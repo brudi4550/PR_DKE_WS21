@@ -2,6 +2,8 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <!-- Es wird eine Variable "typ" von der View Function übergeben. Hier ist eingespeichert, um welche Art von User es
+         sich beim momentanen User (current_user) handelt. Ist dieser ein Administrator, so hat dieser zusätzlich Schreibrechte. -->
     {% if typ == 'Administrator' %}
     <h3>Hier können Sie Ihre Daten ansehen und gegebenfalls ändern:</h3>
     <div class="row">
@@ -11,43 +13,48 @@
                 <table>
                     <tr>
                         <td width="100px">{{ wtf.form_field(form.submit) }}</td>
+                    <!-- Die nachfolgende, etwas "unreinere" Codeimplementierung musste so durchgeführt werden, um die Buttons nebeneinander
+                         darstellen zu können -->
             </form>
                 <form action="{{ url_for('deleteUser', mitarbeiterNr=current_user.mitarbeiterNr) }}" method="post">
                     {{ form2.hidden_tag() }}
                     {{ wtf.form_errors(form2, hiddens="only") }}
-                    
+
                         <td>{{ wtf.form_field(form2.submit) }}</td>
                     </tr>
                 </form>
-                </table>
+            </table>
         </div>
     </div>
+        <!-- Handelt es sich beim momentanen User nicht um einen Administrator, so hat dieser nur Leserechte -->
     {% else %}
-    <h3>Hier können Sie sich Ihre Daten ansehen:</h3>
-    <table class="table table-hover">
-        <tr>
-            <td>Mitarbeiternummer:</td>
-            <td>{{ current_user.mitarbeiterNr }}</td>
-        <tr>
-            <td>Sozialversicherungsnummer:</td>
-            <td>{{ current_user.svnr }}</td>
-        <tr>
-            <td>Vorname:</td>
-            <td>{{ current_user.vorname }}</td>
-        <tr>
-            <td>Nachname:</td>
-            <td>{{ current_user.nachname }}</td>
-        <tr>
-            <td>Email:</td>
-            <td>{{ current_user.email }}</td>
-        <tr>
-            <td>Beruf:</td>
-            <td>
-                {% if typ == 'Wartungspersonal' %}
-                {{ typ }}
-                {% else %}
-                {{ current_user.berufsbezeichnung }}
-                {% endif %}
-            </td>
+        <h3>Hier können Sie sich Ihre Daten ansehen:</h3>
+        <table class="table table-hover">
+            <tr>
+                <td>Mitarbeiternummer:</td>
+                <td>{{ current_user.mitarbeiterNr }}</td>
+            <tr>
+                <td>Sozialversicherungsnummer:</td>
+                <td>{{ current_user.svnr }}</td>
+            <tr>
+                <td>Vorname:</td>
+                <td>{{ current_user.vorname }}</td>
+            <tr>
+                <td>Nachname:</td>
+                <td>{{ current_user.nachname }}</td>
+            <tr>
+                <td>Email:</td>
+                <td>{{ current_user.email }}</td>
+            <tr>
+                <td>Beruf:</td>
+                <td>
+                    {% if typ == 'Wartungspersonal' %}
+                    {{ typ }}
+                    {% else %}
+                    {{ current_user.berufsbezeichnung }}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
     {% endif %}
 {% endblock %}
