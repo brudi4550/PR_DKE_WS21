@@ -10,6 +10,7 @@
         <table class="table table-hover">
             <tr>
                 <th>Wartungsnummer</th>
+                <th>Datum</th>
                 <th>Von</th>
                 <th>Bis</th>
                 <th>Zugeteiltes Personal</th>
@@ -18,8 +19,9 @@
             {% for w in wartung %}
                 <tr>
                     <td>{{ w.wartungsNr }}</td>
-                    <td>{{ w.von.strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td>{{ w.bis.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ w.von.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ w.von.strftime('%H:%M') }}</td>
+                    <td>{{ w.bis.strftime('%H:%M') }}</td>
                     <td>
                         {% for p in w.zugeordnetes_wartungspersonal().all() %}
                             <ul class="list-unstyled">

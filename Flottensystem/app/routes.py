@@ -584,7 +584,7 @@ def editMaintenance(wartungsNr):
         if wartungspersonalListe == []:
             flash('Fehler: Zu einer Wartung muss mindestens ein Wartungspersonal eingeteilt werden!')
             return redirect(url_for('editMaintenance', wartungsNr=wartungsNr))
-        wartung.nr = form.wartungsNr.data
+        wartung.wartungsNr = form.wartungsNr.data
         wartung.von = form.von.data
         wartung.bis = form.bis.data
         ''' Als nächstes wird von der zu ändernden Wartung auf die ursprünglich zugeteilten Wartungspersonalmitarbeiter (durch
