@@ -65,7 +65,7 @@ def update_route_warnings():
                             added_count += 1
                         else:
                             current_api_warning_ids.append(alreadyExistingWarning.id)
-            to_be_deleted = RouteWarning.query.filter(RouteWarning.id.not_in(current_api_warning_ids))
+            to_be_deleted = RouteWarning.query.filter(RouteWarning.id.not_in(current_api_warning_ids)).all()
             for warning in to_be_deleted:
                 deleted_count += 1
                 db.session.delete(warning)
