@@ -1,11 +1,8 @@
-from flask import render_template, redirect, request, flash, session
+from flask import render_template, redirect, session
 from flask_login import login_required
 
 from app import app, db, admin_required
-from app.forms import SingleTripForm, IntervalTripForm
-from app.models import Tour, Trip, Interval
-from datetime import datetime, timedelta, time, date
-
+from app.models import Interval
 from app.routes.general import append_activity
 
 

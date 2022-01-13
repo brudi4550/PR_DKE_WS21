@@ -1,4 +1,3 @@
-from app import app
 from app.models import *
 
 
@@ -10,5 +9,8 @@ def make_shell_context():
             'Tour': Tour,
             'Trip': Trip,
             'Crew': Crew,
-            'Interval': Interval
+            'Interval': Interval,
+            'System': System,
+            'RouteWarning': RouteWarning,
+            'TrainWarning': TrainWarning
             }

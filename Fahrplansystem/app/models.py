@@ -13,11 +13,42 @@ def load_user(id):
     return Employee.query.get(int(id))
 
 
+class RouteWarning(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    msg = db.Column(db.String(512))
+    route_start = db.Column(db.String(128))
+    route_end = db.Column(db.String(128))
+    start = db.Column(db.DateTime)
+    end = db.Column(db.DateTime)
+    system_id = db.Column(db.Integer, db.ForeignKey('system.id'))
+
+
+class TrainWarning(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    msg = db.Column(db.String(512))
+    type = db.Column(db.String(64))
+    train = db.Column(db.String(128))
+    start = db.Column(db.DateTime)
+    end = db.Column(db.DateTime)
+    system_id = db.Column(db.Integer, db.ForeignKey('system.id'))
+
+
 class Rushhour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime)
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
+
+
+def warnings_found(tour, dt):
+    warnings_count = RouteWarning.query.filter(RouteWarning.route_start == tour.start,
+                                               RouteWarning.route_end == tour.end,
+                                               RouteWarning.start < dt,
+                                               RouteWarning.end > dt).count()
+    warnings_count += TrainWarning.query.filter(TrainWarning.train == tour.train,
+                                                TrainWarning.start < dt,
+                                                TrainWarning.end > dt).count()
+    return warnings_count > 0
 
 
 def update_timetable():
@@ -29,16 +60,14 @@ def update_timetable():
     for tour in tours:
         for interval in tour.intervals:
             for trip in interval.trips:
-                if trip.start_datetime.date() < delete_if_before:
+                if trip.start_datetime.date() < delete_if_before \
+                        or warnings_found(interval.tour, trip.start_datetime):
                     db.session.delete(trip)
                     deleted_count += 1
             start_date = interval.start_date
             if start_date < date.today():
                 start_date = date.today()
-            datetime_end_date = timedelta(weeks=4) + start_date
-            end_date = date(year=datetime_end_date.year,
-                            month=datetime_end_date.month,
-                            day=datetime_end_date.day)
+            end_date = timedelta(weeks=4) + start_date
             if interval.end_date is not None and interval.end_date < end_date:
                 end_date = interval.end_date
             start_time = interval.start_time
@@ -53,7 +82,8 @@ def update_timetable():
                         trip = trips_on_date
                     else:
                         trip = trips_on_date.filter(sa.func.time(Trip.start_datetime) == start_time)
-                    if trip is None and start_date.weekday() in weekdays:
+                    if trip is None and start_date.weekday() in weekdays \
+                            and not warnings_found(interval.tour, datetime.combine(start_date, start_time)):
                         trip = Trip()
                         trip.start_datetime = datetime.combine(start_date, start_time)
                         trip.interval_id = interval.id
@@ -67,7 +97,8 @@ def update_timetable():
                 start_date = start_date + timedelta(days=1)
                 start_time = interval.start_time
         for trip in tour.trips:
-            if trip.start_datetime.date() < delete_if_before:
+            if trip.start_datetime.date() < delete_if_before \
+                    or warnings_found(trip.tour, trip.start_datetime):
                 db.session.delete(trip)
                 deleted_count += 1
     sys = System.query.get(1)
@@ -80,6 +111,8 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     last_system_check = db.Column(db.DateTime)
     days_to_keep_old_trips = db.Column(db.Integer, default=0)
+    known_route_warnings = db.relationship('RouteWarning', backref='system', cascade='all,delete', lazy='dynamic')
+    known_train_warnings = db.relationship('TrainWarning', backref='system', cascade='all,delete', lazy='dynamic')
 
 
 class Activity(db.Model):

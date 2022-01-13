@@ -78,6 +78,7 @@ def system_settings():
         db.session.commit()
         redirect(url_for('system_settings'))
     if rushhour_form.validate_on_submit():
+        sys_form.days_to_keep_old_trips.data = sys.days_to_keep_old_trips
         tour_ids = rushhour_form.tour_ids.data.split(",")
         tour_ids = [int(x) for x in tour_ids]
         start_time_date = datetime(year=2021,
