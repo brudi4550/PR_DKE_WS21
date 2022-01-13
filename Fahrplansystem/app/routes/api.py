@@ -7,7 +7,7 @@ import requests
 from flask import url_for, jsonify, make_response, request, Response
 
 from app import app, db
-from app.models import Employee, RouteWarning, TrainWarning, update_timetable, Trip, Tour
+from app.models import Employee, RouteWarning, TrainWarning, update_timetable, Trip, Tour, Interval
 from app.routes.general import append_activity
 
 
@@ -79,6 +79,19 @@ def update_route_warnings():
     return Response(status=500)
 
 
+def is_in_rushhour(trip):
+    tour = trip.tour if trip.tour is not None else trip.interval.tour
+    for rushhour in tour.rushhours:
+        if rushhour.start_time.time() < trip.start_datetime.time() < rushhour.end_time.time():
+            return True
+    return False
+
+
+def get_rushhour_multiplicator(trip):
+    tour = trip.tour if trip.tour is not None else trip.interval.tour
+    return tour.rushHourMultiplicator
+
+
 @app.route('/search_trips')
 def search_trips():
     params = request.args.to_dict()
@@ -99,15 +112,20 @@ def search_trips():
                                                                       end_section)
     time_to_train_station = distance_to_start / app.config['AVG_TRAIN_SPEED_KMH']
     latest_departure_time = departure - timedelta(hours=time_to_train_station)
-    # TODO fix, only checks non interval trips, check for rushhour and increase price
     tour = Tour.query.filter(Tour.start == correct_route_start,
                              Tour.end == correct_route_end).first()
-    trips = Trip.query.filter(Trip.tour_id == tour.id,
-                              Trip.start_datetime < latest_departure_time).all()
+    trips = tour.trips.filter(Trip.start_datetime < latest_departure_time,
+                              Trip.start_datetime > latest_departure_time - timedelta(days=1)).all()
+    for interval in tour.intervals:
+        trips += interval.trips.filter(Trip.start_datetime < latest_departure_time,
+                                       Trip.start_datetime > latest_departure_time - timedelta(days=1)).all()
     price = distance_between_start_and_end * app.config['PRICE_PER_KM_EURO']
-    trips_with_price = {'price': price, 'matching_trips': []}
+    trips_with_price = {'matching_trips': []}
     for trip in trips:
+        if is_in_rushhour(trip):
+            price *= get_rushhour_multiplicator(trip)
         trips_with_price['matching_trips'].append({
+            'price': price,
             'from': start_section,
             'to': end_section,
             'start_train_station': tour.start,
