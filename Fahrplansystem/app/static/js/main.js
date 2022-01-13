@@ -162,7 +162,7 @@ $(document).ready(function () {
             } else if (hours != 0) {
                 timer.prepend(hours + ' Stunden ' + minutes + ' Minuten ')
             } else if (minutes != 0) {
-                timer.prepend(minutes + ' Minuten')
+                timer.prepend(minutes + ' Minuten ')
             }
             if (secs > 0) {
                 secs--;
