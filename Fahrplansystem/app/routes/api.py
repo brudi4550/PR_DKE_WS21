@@ -55,8 +55,7 @@ def update_route_warnings():
                         alreadyExistingWarning = RouteWarning.query.filter(
                             RouteWarning.route_start == w.route_start,
                             RouteWarning.route_end == w.route_end,
-                            RouteWarning.start == w.start,
-                            RouteWarning.end == w.end
+                            RouteWarning.msg == w.msg
                         ).first()
                         if alreadyExistingWarning is None:
                             db.session.add(w)
