@@ -29,4 +29,7 @@ login = LoginManager(app)
 login.login_view = 'login'
 bootstrap = Bootstrap(app)
 
+from app.api import bp as api_bp
+app.register_blueprint(api_bp, url_prefix='/api')
+
 from app import routes, models

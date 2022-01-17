@@ -5,9 +5,24 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import configure_mappers
+from flask import url_for
 
 
 ''' Anmerkung: Bei der Beschreibung des Codes wurde darauf beachtet, den Code möglichst wenig doppelt zu beschreiben. '''
+
+''' In der folgenden Klasse wird eine Methode definiert, die eine Repräsentation einer Kollektion von einem Objekt
+    zurückgibt, welche die API benötigt. Die Daten, die zurückgegeben werden, werden in einem Dictionary eingespeichert.
+    Klassen, die diese APIMixin Klasse benötigen, müssen schließlich von dieser erben. '''
+class APIMixin(object):
+    @staticmethod
+    def to_collection_dict(query, endpoint, **kwargs):
+        data = {
+            'items': [item.to_dict() for item in query],
+            '_links': {
+                'self': url_for(endpoint, **kwargs)
+            }
+        }
+        return data
 
 ''' Da zwischen Wartungspersonal und Wartung eine "* zu *" Assoziation besteht, wird nachfolgend eine Hilfstabelle
     definiert, welches die Primärschlüssel der Klassen enthält, die durch die Assoziation verknüpft sind '''
@@ -17,7 +32,7 @@ ist_zugeteilt = db.Table('ist_zugeteilt',
 )
 
 
-class Zug(db.Model):
+class Zug(APIMixin, db.Model):
     nr = db.Column(db.String(255), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     ''' Nachfolgend wird ein Feld für die Assoziation zwischen Zug und Zugpersonal definiert. Da es sich hier um eine 
@@ -34,6 +49,25 @@ class Zug(db.Model):
 
     def __repr__(self):
         return '<Zugnummer: {}>'.format(self.nr)
+
+    def to_dict(self):
+        data = {
+            'nr': self.nr,
+            'name': self.name,
+            'triebwagen_nr': self.triebwagen_nr,
+            '_links': {
+                'self': url_for('api.getTrain', id=self.nr),
+                'wartungen': url_for('api.getMaintenancesFromTrain', id=self.nr),
+                'personenwagen': url_for('api.getPersonenwaggonsFromTrain', id=self.nr)
+            }
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['nr', 'name', 'triebwagen_nr']:
+            if field in data:
+                setattr(self, field, data[field])
+
 
 
 class Mitarbeiter(UserMixin, db.Model, AbstractConcreteBase):
@@ -106,7 +140,7 @@ class Administrator(Mitarbeiter):
         return '<Administrator {} {}>'.format(self.vorname, self.nachname)
  
 
-class Wagen(db.Model, AbstractConcreteBase):
+class Wagen(APIMixin, db.Model, AbstractConcreteBase):
     nr = db.Column(db.Integer, primary_key=True)
     spurweite = db.Column(db.Integer, index=True, nullable=False)
 
@@ -119,6 +153,23 @@ class Triebwagen(Wagen):
     zug = db.relationship('Zug', backref='triebwagen', uselist=False, cascade='all, delete-orphan')
     
     __mapper_args__ = { 'polymorphic_identity':'triebwagen', 'concrete':True}
+
+    def to_dict(self):
+        data = {
+            'nr': self.nr,
+            'spurweite': self.spurweite,
+            'maxZugkraft': self.maxZugkraft,
+            '_links': {
+                'self': url_for('api.getWaggon', id=self.nr),
+                #'zug': url_for('api.get')
+            }
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['nr', 'spurweite', 'maxZugkraft']:
+            if field in data:
+                setattr(self, field, data[field])
     
         
 class Personenwagen(Wagen):
@@ -128,9 +179,27 @@ class Personenwagen(Wagen):
     zugNr = db.Column(db.String(255), db.ForeignKey('zug.nr', onupdate='CASCADE', ondelete='CASCADE'))
     
     __mapper_args__ = { 'polymorphic_identity':'personenwagen', 'concrete':True}
+
+    def to_dict(self):
+        data = {
+            'nr': self.nr,
+            'spurweite': self.spurweite,
+            'sitzanzahl': self.sitzanzahl,
+            'maximalgewicht': self.maximalgewicht,
+            '_links': {
+                'self': url_for('api.getWaggon', id=self.nr)
+                #'wartung': url_for('api.')
+            }
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['nr', 'spurweite', 'maxZugkraft']:
+            if field in data:
+                setattr(self, field, data[field])
         
 
-class Wartung(db.Model):
+class Wartung(APIMixin, db.Model):
     wartungsNr = db.Column(db.Integer, primary_key=True)
     von = db.Column(db.DateTime, nullable=False)
     bis = db.Column(db.DateTime, nullable=False)
@@ -175,5 +244,24 @@ class Wartung(db.Model):
 
     def __repr__(self):
         return '<Wartungsnummer: {}>'.format(self.wartungsNr)
+
+    def to_dict(self):
+        data = {
+            'wartungsNr': self.wartungsNr,
+            'von': self.von,
+            'bis': self.bis,
+            'zugNr': self.zugNr,
+            '_links': {
+                'self': url_for('api.getMaintenance', id=self.wartungsNr)
+                #'wartung': url_for('api.')
+            }
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['wartungsNr', 'von', 'bis', 'zugNr']:
+            if field in data:
+                setattr(self, field, data[field])
+
 
 configure_mappers()
