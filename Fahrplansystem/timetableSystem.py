@@ -1,4 +1,6 @@
-from app.models import *
+from app import app
+from app.models.models import *
+from app.models.system import System
 
 
 @app.shell_context_processor

@@ -18,8 +18,13 @@
                        <tr>
                            <td>{{ trip.start_datetime.date().strftime('%d.%m.%Y')}}</td>
                            <td>{{ trip.start_datetime.time().strftime('%H:%M')}}</td>
-                           <td>{{ trip.tour.start }}</td>
-                           <td>{{ trip.tour.end }}</td>
+                           {% if trip.tour %}
+                               <td>{{ trip.tour.start }}</td>
+                               <td>{{ trip.tour.end }}</td>
+                           {% else %}
+                               <td>{{ trip.interval.tour.start }}</td>
+                               <td>{{ trip.interval.tour.end }}</td>
+                           {% endif %}
                        </tr>
                        {% endfor %}
                    </table>

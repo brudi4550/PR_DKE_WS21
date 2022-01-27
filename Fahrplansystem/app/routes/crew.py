@@ -2,8 +2,8 @@ from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
 from app import app, admin_required, db
-from app.models import Crew, Employee
-from app.routes.general import append_activity
+from app.models.models import Crew, Employee
+from app.functions import append_activity
 
 
 @app.route('/manage_crews', methods=['GET'])

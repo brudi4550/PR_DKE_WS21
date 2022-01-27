@@ -3,9 +3,8 @@ from flask_login import login_required
 
 from app import app, db, admin_required
 from app.forms import TourForm
-from app.models import Tour
-from app.routes.api import get_route_choices, get_train_choices
-from app.routes.general import append_activity
+from app.models.models import Tour
+from app.functions import append_activity, get_route_choices, get_train_choices, train_width_matches_track_width
 
 
 @app.route('/add_tour', methods=['GET', 'POST'])
@@ -23,10 +22,13 @@ def add_tour():
         tour.end = route[1]
         tour.train = form.train_choice.data
         tour.rushHourMultiplicator = form.rush_hour_multiplicator.data
-        db.session.add(tour)
-        db.session.commit()
-        append_activity(f'Fahrt {tour.start} - {tour.end} hinzugefügt.')
-        flash('Fahrt erfolgreich hinzugefügt')
+        if train_width_matches_track_width(tour):
+            db.session.add(tour)
+            db.session.commit()
+            append_activity(f'Fahrt {tour.start} - {tour.end} hinzugefügt.')
+            flash('Fahrt erfolgreich hinzugefügt')
+        else:
+            flash('Spurweiten der Fahrtstrecke und des ausgewählten Zuges stimmen nicht überein.')
     return render_template('tour/add_tour.html', form=form)
 
 

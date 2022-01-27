@@ -1,19 +1,11 @@
 from flask import render_template, flash, redirect, url_for, request, session, Response
 from flask_login import current_user, login_user, logout_user, login_required
-from sqlalchemy import desc, asc
-from app import admin_required
+from sqlalchemy import desc
+from app import app, admin_required
 from app.forms import LoginForm, AddRushhourForm, EditRushhourForm, SystemForm
-from app.models import *
-
-
-def append_activity(message):
-    new_activity = Activity()
-    new_activity.msg = message
-    if Activity.query.count() > 9:
-        oldest_activity = Activity.query.order_by(asc(Activity.time)).first()
-        db.session.delete(oldest_activity)
-    db.session.add(new_activity)
-    db.session.commit()
+from app.functions import update_timetable, append_activity
+from app.models.models import *
+from app.models.system import System
 
 
 @app.route('/home', methods=['GET'])

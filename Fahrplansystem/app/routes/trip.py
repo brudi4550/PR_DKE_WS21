@@ -5,31 +5,9 @@ from flask_login import login_required, current_user
 
 from app import app, db, admin_required
 from app.forms import SingleTripForm, IntervalTripForm
-from app.models import Tour, Trip, Interval, Crew, get_weekdays
+from app.models.models import Tour, Trip, Interval
 
-
-# Specified weekdays of an interval get saved in a string formatted like:
-# '4:5:6:', which would indicate that this interval is only active on friday, saturday and sunday.
-from app.routes.general import append_activity
-
-
-def add_weekdays(iv, iv_form):
-    weekdays = ''
-    if iv_form.monday.data:
-        weekdays += '0:'
-    if iv_form.tuesday.data:
-        weekdays += '1:'
-    if iv_form.wednesday.data:
-        weekdays += '2:'
-    if iv_form.thursday.data:
-        weekdays += '3:'
-    if iv_form.friday.data:
-        weekdays += '4:'
-    if iv_form.saturday.data:
-        weekdays += '5:'
-    if iv_form.sunday.data:
-        weekdays += '6:'
-    iv.weekdays = weekdays
+from app.functions import append_activity, add_weekdays, get_weekdays
 
 
 @app.route('/manage_trips/<tour_id>', methods=['GET', 'POST'])
@@ -139,3 +117,11 @@ def my_trips():
     trips = Trip.query.filter_by(crew_id=current_user.crew_id).all()
     trips = sorted(trips, key=lambda t: t.start_datetime)
     return render_template('trip/my_trips.html', crew=current_user.crew_id, trips=trips)
+
+
+@app.route('/all_trips')
+@login_required
+def all_trips():
+    trips = Trip.query.all()
+    trips = sorted(trips, key=lambda t: t.start_datetime)
+    return render_template('trip/all_trips.html', trips=trips)

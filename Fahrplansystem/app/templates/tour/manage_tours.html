@@ -8,8 +8,7 @@
         <table class="table table-hover manage_tours">
             <tr>
                 <th>Fahrt ID</th>
-                <th>Start</th>
-                <th>Ziel</th>
+                <th>Strecke</th>
                 <th>Zug</th>
                 <th>Stoßzeitmultiplikator</th>
                 <th>
@@ -21,9 +20,12 @@
             {% for tour in tours %}
                 <tr class="tour" tour_id="{{ tour.id }}">
                     <td>{{ tour.id }}</td>
-                    <td>{{ tour.start }}</td>
-                    <td>{{ tour.end }}</td>
-                    <td>{{ tour.train }}</td>
+                    <td>
+                        <a href="{{ url_for('route', tour_id=tour.id) }}">{{ tour.start }} &rarr; {{ tour.end }}</a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('train', train_nr=tour.train) }}">{{ tour.train }}</a>
+                    </td>
                     <td>{{ tour.rushHourMultiplicator}}x</td>
                     <td>
                         {% with future_trip_count=tour.future_trip_count() %}

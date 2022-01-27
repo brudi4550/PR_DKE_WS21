@@ -76,6 +76,7 @@ $(document).ready(function () {
         });
     });
 
+    //Delete trip on button click
     $('.delete_trip').click(function () {
         if (!window.confirm("Sind Sie sich sicher?")) {
             return
@@ -95,6 +96,7 @@ $(document).ready(function () {
         });
     });
 
+    //Delete rushhour on button click
     $('.delete_rushhour').click(function () {
         if (!window.confirm("Sind Sie sich sicher?")) {
             return
@@ -114,6 +116,7 @@ $(document).ready(function () {
         });
     });
 
+    //Delete interval on button click
     $('.delete_interval').click(function () {
         if (!window.confirm("Sind Sie sich sicher?")) {
             return
@@ -133,6 +136,7 @@ $(document).ready(function () {
         });
     });
 
+    //Send timetable update patch request on button click
     $('.update-timetable').click(function () {
         var ajaxReq = $.ajax({
             url: '/local_update_timetable',
@@ -145,6 +149,7 @@ $(document).ready(function () {
         });
     });
 
+    //admin homepage timer for all tours
     $('.tour-timer').each(function (i, obj) {
         var timer = $(this);
         var secs = timer.attr('until');
@@ -173,6 +178,7 @@ $(document).ready(function () {
 });
 
 //non jquery functions
+//set image when start dragging employee
 function drag_employee(ev) {
     ev.dataTransfer.setData('data', ev.target.getAttribute('employee_id'));
     let img = document.createElement('img');
@@ -180,6 +186,7 @@ function drag_employee(ev) {
     ev.dataTransfer.setDragImage(img, 25, 25);
 }
 
+//send request when employee is dropped on a crew
 function drop_employee(ev) {
     ev.preventDefault();
     var crew_id = ev.target.getAttribute('crew_id');

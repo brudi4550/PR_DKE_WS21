@@ -8,5 +8,5 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # price/km needed for ticket-price calculation in API
     PRICE_PER_KM_EURO = 0.25
-    AVG_TRAIN_SPEED_KMH = 70

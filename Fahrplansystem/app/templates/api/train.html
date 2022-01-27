@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1>Zug {{ train.get('nr') }}</h1>
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading">Allgemeine Informationen</div>
+        <div class="panel-body">
+            <div class="col-md-10">
+                <p>Modell: {{ train.get('name') }}</p>
+                <p>Nummer: {{ train.get('nr') }}</p>
+                <p>Triebwagennummer: {{ train.get('triebwagen_nr') }}</p>
+                <hr>
+                <p><b>Eingetragene Wartungen für diesen Zug:</b></p>
+                <table class="table table-hover">
+                    {% if warning|length < 1 %}
+                    <p>Keine Wartungen für diesen Zug gefunden</p>
+                    {% else %}
+                        <tr>
+                            <th>Von</th>
+                            <th>Bis</th>
+                        </tr>
+                        {% for warning in warnings %}
+                        <tr>
+                            <td>test</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,9 @@
-import sqlalchemy as sa
-from datetime import datetime, timedelta, time, date
+from datetime import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import app, db
+from app import db
 from app import login
 
 
@@ -26,8 +25,7 @@ class RouteWarning(db.Model):
 class TrainWarning(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     msg = db.Column(db.String(512))
-    type = db.Column(db.String(64))
-    train = db.Column(db.String(128))
+    train_nr = db.Column(db.String(128))
     start = db.Column(db.DateTime)
     end = db.Column(db.DateTime)
     system_id = db.Column(db.Integer, db.ForeignKey('system.id'))
@@ -38,81 +36,6 @@ class Rushhour(db.Model):
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime)
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
-
-
-def warnings_found(tour, dt):
-    warnings_count = RouteWarning.query.filter(RouteWarning.route_start == tour.start,
-                                               RouteWarning.route_end == tour.end,
-                                               RouteWarning.start < dt,
-                                               RouteWarning.end > dt).count()
-    warnings_count += TrainWarning.query.filter(TrainWarning.train == tour.train,
-                                                TrainWarning.start < dt,
-                                                TrainWarning.end > dt).count()
-    return warnings_count > 0
-
-
-def update_timetable():
-    days_to_keep_old_trips = System.query.get(1).days_to_keep_old_trips
-    delete_if_before = date.today() - timedelta(days=days_to_keep_old_trips)
-    tours = Tour.query.all()
-    deleted_count = 0
-    added_count = 0
-    for tour in tours:
-        for interval in tour.intervals:
-            for trip in interval.trips:
-                if trip.start_datetime.date() < delete_if_before \
-                        or warnings_found(interval.tour, trip.start_datetime):
-                    db.session.delete(trip)
-                    deleted_count += 1
-            start_date = interval.start_date
-            if start_date < date.today():
-                start_date = date.today()
-            end_date = timedelta(weeks=4) + start_date
-            if interval.end_date is not None and interval.end_date < end_date:
-                end_date = interval.end_date
-            start_time = interval.start_time
-            end_time = interval.end_time
-            weekdays = get_weekdays(interval)
-            iv_minutes_delta = timedelta(minutes=interval.interval_minutes)
-            trips_in_interval = Trip.query.filter_by(interval_id=interval.id)
-            while start_date < end_date:
-                trips_on_date = trips_in_interval.filter(sa.func.date(Trip.start_datetime) == start_date)
-                while start_time < end_time:
-                    if isinstance(trips_on_date, Trip):
-                        trip = trips_on_date
-                    else:
-                        trip = trips_on_date.filter(sa.func.time(Trip.start_datetime) == start_time)
-                    if trip is None and start_date.weekday() in weekdays \
-                            and not warnings_found(interval.tour, datetime.combine(start_date, start_time)):
-                        trip = Trip()
-                        trip.start_datetime = datetime.combine(start_date, start_time)
-                        trip.interval_id = interval.id
-                        db.session.add(trip)
-                        added_count += 1
-                    # Converting datetime.time to datetime.datetime and back
-                    # because time doesn't support addition, datetime does
-                    dummy_time = datetime(2021, 1, 1, hour=start_time.hour, minute=start_time.minute)
-                    dummy_time = iv_minutes_delta + dummy_time
-                    start_time = time(hour=dummy_time.hour, minute=dummy_time.minute)
-                start_date = start_date + timedelta(days=1)
-                start_time = interval.start_time
-        for trip in tour.trips:
-            if trip.start_datetime.date() < delete_if_before \
-                    or warnings_found(trip.tour, trip.start_datetime):
-                db.session.delete(trip)
-                deleted_count += 1
-    sys = System.query.get(1)
-    sys.last_system_check = datetime.today()
-    db.session.commit()
-    return added_count, deleted_count
-
-
-class System(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    last_system_check = db.Column(db.DateTime)
-    days_to_keep_old_trips = db.Column(db.Integer, default=0)
-    known_route_warnings = db.relationship('RouteWarning', backref='system', cascade='all,delete', lazy='dynamic')
-    known_train_warnings = db.relationship('TrainWarning', backref='system', cascade='all,delete', lazy='dynamic')
 
 
 class Activity(db.Model):
@@ -172,13 +95,6 @@ class Crew(db.Model):
     trips = db.relationship('Trip', backref='assigned_crew', lazy='dynamic')
 
 
-def get_weekdays(interval):
-    wd = interval.weekdays.split(':')
-    wd.pop()
-    wd = [int(x) for x in wd]
-    return wd
-
-
 class Interval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_date = db.Column(db.Date)
@@ -189,26 +105,6 @@ class Interval(db.Model):
     interval_minutes = db.Column(db.Integer)
     trips = db.relationship('Trip', backref='interval', cascade='all,delete', lazy='dynamic')
     tour_id = db.Column(db.Integer, db.ForeignKey('tour.id'))
-
-
-# trips whose datetime lies in the past are ignored
-# expects that a trip might be None
-def earlier_upcoming_trip(trip1, trip2):
-    trip1_in_past = True
-    trip2_in_past = True
-    if trip1 is not None:
-        trip1_in_past = trip1.is_before_current_datetime()
-    if trip2 is not None:
-        trip2_in_past = trip2.is_before_current_datetime()
-    # None trips get treated as if they were in the past
-    if not trip1_in_past and not trip2_in_past:
-        return min(trip1, trip2, key=lambda t: t.start_datetime)
-    elif not trip1_in_past and trip2_in_past:
-        return trip1
-    elif trip1_in_past and not trip2_in_past:
-        return trip2
-    elif trip1_in_past and trip2_in_past:
-        return None
 
 
 class Tour(db.Model):
@@ -268,6 +164,26 @@ class Tour(db.Model):
         now = datetime.now()
         until = next_trip.start_datetime - now
         return until.total_seconds()
+
+
+# trips whose datetime lies in the past are ignored
+# expects that a trip might be None
+def earlier_upcoming_trip(trip1, trip2):
+    trip1_in_past = True
+    trip2_in_past = True
+    if trip1 is not None:
+        trip1_in_past = trip1.is_before_current_datetime()
+    if trip2 is not None:
+        trip2_in_past = trip2.is_before_current_datetime()
+    # None trips get treated as if they were in the past
+    if not trip1_in_past and not trip2_in_past:
+        return min(trip1, trip2, key=lambda t: t.start_datetime)
+    elif not trip1_in_past and trip2_in_past:
+        return trip1
+    elif trip1_in_past and not trip2_in_past:
+        return trip2
+    elif trip1_in_past and trip2_in_past:
+        return None
 
 
 class Trip(db.Model):

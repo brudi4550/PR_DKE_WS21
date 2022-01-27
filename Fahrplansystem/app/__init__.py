@@ -31,22 +31,19 @@ bootstrap = Bootstrap(app)
 login.login_view = 'login'
 
 
+# Decorator for admin-only routes/views
 def admin_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if current_user.employee_type == 'admin':
             return func(*args, **kwargs)
         url = request.path
-        method = request.method
-        employee_id = current_user.id
-        fn = current_user.first_name
-        ln = current_user.last_name
         return render_template('errors/404.html', url=url), 404
     return decorated_view
 
 
 from app import errors
-from app.models import System, update_timetable
+from app.models.system import System
 from app.routes import general, employee, crew, tour, trip, interval, api
 
 if not app.debug:
@@ -63,6 +60,7 @@ if not app.debug:
     app.logger.info('Fahrplansystem gestartet')
 
 
+# make sure System object always exists, create tables if not yet created
 if 'system' not in db.metadata.tables.keys():
     db.create_all()
 else:

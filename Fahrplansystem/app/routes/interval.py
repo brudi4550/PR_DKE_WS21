@@ -2,8 +2,8 @@ from flask import render_template, redirect, session
 from flask_login import login_required
 
 from app import app, db, admin_required
-from app.models import Interval
-from app.routes.general import append_activity
+from app.models.models import Interval
+from app.functions import append_activity
 
 
 @app.route('/edit_interval/<interval_id>')

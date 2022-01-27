@@ -3,16 +3,16 @@ from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
 from app import app, db, admin_required
-from app.forms import RegisterNewUserForm, EditEmployeeForm
-from app.models import Employee, Crew
-from app.routes.general import append_activity
+from app.forms import EmployeeForm
+from app.models.models import Employee, Crew
+from app.functions import append_activity
 
 
 @app.route('/add_employee', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_employee():
-    form = RegisterNewUserForm()
+    form = EmployeeForm()
     if form.validate_on_submit():
         e = Employee()
         e.ssn = form.ssn.data
@@ -55,13 +55,13 @@ def delete_employee(id):
         return render_template('employee/manage_employees.html'), 500
 
 
-# TODO refactor this
 @app.route('/edit_employee/<id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def employee(id):
     emp = Employee.query.filter_by(id=id).first_or_404()
-    form = EditEmployeeForm()
+    form = EmployeeForm()
+    form.submit.label.text = 'Benutzer speichern'
     if request.method == 'GET':
         form.ssn.data = emp.ssn
         form.first_name.data = emp.first_name

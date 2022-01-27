@@ -1,9 +1,9 @@
-from flask_wtf import Form, FlaskForm
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, PasswordField, BooleanField, \
-    SelectField, DecimalField, DateField, TimeField, RadioField, DateTimeField
+    SelectField, DecimalField, DateField, TimeField
 from wtforms.validators import DataRequired, Optional
-from wtforms.validators import ValidationError, Email, EqualTo
-from app.models import Employee
+from wtforms.validators import ValidationError, EqualTo
+from app.models.models import Employee
 
 
 class LoginForm(FlaskForm):
@@ -13,8 +13,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Einloggen')
 
 
-# TODO refactor registeruserform and edituserform
-class RegisterNewUserForm(FlaskForm):
+class EmployeeForm(FlaskForm):
     ssn = IntegerField('Sozialversicherungsnummer', validators=[DataRequired()])
     first_name = StringField('Vorname', validators=[DataRequired()])
     last_name = StringField('Nachname', validators=[DataRequired()])
@@ -34,23 +33,6 @@ class RegisterNewUserForm(FlaskForm):
         employee = Employee.query.filter_by(ssn=ssn.data).first()
         if employee is not None:
             raise ValidationError('Sozialversicherungsnummer muss eindeutig sein.')
-
-
-class EditEmployeeForm(FlaskForm):
-    ssn = IntegerField('Sozialversicherungsnummer', validators=[DataRequired()])
-    first_name = StringField('Vorname', validators=[DataRequired()])
-    last_name = StringField('Nachname', validators=[DataRequired()])
-    employee_type_choices = [
-        ('admin', 'Administrator'),
-        ('employee', 'Mitarbeiter'),
-        ('ticket_inspector', 'Kontrolleur'),
-        ('train_driver', 'Lokführer')
-    ]
-    employee_type = SelectField('Mitarbeiter-Funktion', choices=employee_type_choices, validators=[DataRequired()])
-    crew_id = IntegerField('Bordpersonalteam', validators=[Optional()])
-    password = PasswordField('Passwort')
-    password2 = PasswordField('Passwort wiederholen', validators=[EqualTo('password')])
-    submit = SubmitField('Benutzer speichern')
 
 
 class TourForm(FlaskForm):
