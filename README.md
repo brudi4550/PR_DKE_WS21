@@ -75,7 +75,7 @@ Bis Februar 2022 ist das Fahrplansystem auch auf diesem VPS deployed:
 Das Flotteninformationssystem stellt dem Fahrplaninformationssystem und dem 
 Ticketinformationssystem Daten zur Verfügung.
 
-###Funktionalitäten
+### Funktionalitäten
 Das Hinzufügen eines Mitarbeiters, wobei ein Mitarbeiter ein Administrator,
 Wartungspersonal oder Zugpersonal ist.
 
@@ -104,7 +104,7 @@ wird im Code beschrieben)
 API zum Bereitstellen von Zug- und Wartungsdaten. Weitere API's die implementiert wurden,
 sind Waggons und Mitarbeiter (Einzelheiten werden im Code erklärt)
 
-###Sonstiges
+### Sonstiges
 Admin-Login für lokales Flottensystem:<br>
 Mitarbeiter-Email: anil@hotmail.com<br>
 Passwort: test<br>
