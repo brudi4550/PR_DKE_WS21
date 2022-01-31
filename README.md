@@ -26,9 +26,13 @@ ti (Ticketsystem)<br>
 q  (quiet - Keine Flask Informationen anzeigen)<br>
 
 Also z.B. <br>
-./run.sh fa q<br>
+```bash
+./run.sh fa q
+```
 oder<br>
-./run.sh st ti fl <br>
+```bash
+./run.sh st ti fl
+```
 
 ## Fahrplaninformationssystem
 Das Fahrplaninfomrationssystem verwendet Daten aus dem Flottensystem und dem
