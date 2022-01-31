@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <!-- Sind keine Züge verfügbar, so wird dies dem User mitgeteilt -->
     {% if zug == [] %}
         <p>Es sind keine Züge vorhanden!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
@@ -40,7 +40,8 @@
                         {% endif %}
                     </td>
                     {% for p in z.personenwagen.all() %}
-                        {%  if loop.first %}
+                        <!-- Durch den Ausdruck "loop.first" wird die nachfolgende if-Abfrage nur beim ersten Schleifendurchgang aufgerufen -->
+                        {% if loop.first %}
                             <td>{{ p.spurweite }} mm</td>
                         {% endif %}
                     {% endfor %}

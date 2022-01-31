@@ -2,7 +2,9 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% if typ == 'Triebwagen' %}
+    <!-- Es wird überprüft, welche Wagenart von der View Function übergeben wird (also welche Wagenart bearbeitet
+         werden soll). Je nach dem, wird eine angepasste Überschrift in der Webseite angezeigt. -->
+    {% if wagenart == 'Triebwagen' %}
     <h2>Triebwagen bearbeiten</h2>
     {% else %}
     <h2>Personenwagen bearbeiten</h2>

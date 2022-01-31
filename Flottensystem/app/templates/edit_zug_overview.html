@@ -2,6 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <!-- Sind keine Züge verfügbar, so wird dies dem User mitgeteilt -->
     {% if zug == [] %}
         <p>Keine Züge zum bearbeiten verfügbar!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>

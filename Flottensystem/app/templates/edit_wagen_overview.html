@@ -3,9 +3,17 @@
 
 {% block app_content %}
     {% if triebwagen == [] and personenwagen == [] %}
+        <!-- Sind keine Waggons verfügbar, so wird dies dem User mitgeteilt -->
         <p>Keine Waggons zum bearbeiten verfügbar!</p>
-        <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>
+        <ul class="list-unstyled">
+            <li><a href="{{ url_for('waggon') }}">Neuen Waggon erstellen</a></li>
+            <li><a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a></li>
+        </ul>
     {% else %}
+        <!-- Designvorgehensweise für diese Seite: In dieser Seite werden beide Wagenarten in einer Tabelle dargestellt, da es hier
+             nicht das Ziel ist, eine Übersicht über die verschiedenen Waggons (wie es in der Waggonübersichtsseite "wagen_overview.html"
+             der Fall ist) zu geben. Der Administrator soll hier primär die Waggons sehen können, damit dieser einen auswählen kann,
+             um diesen Waggon schließlich zu bearbeiten bzw. zu löschen. -->
         <h4>Bestehende Waggons bearbeiten:</h4><br>
         <table class="table table-hover">
             <tr>
@@ -15,6 +23,7 @@
                 <th>Maximale Zugkraft [Tonnen]</th>
                 <th>Sitzanzahl</th>
                 <th>Maximalgewicht [Tonnen]</th>
+                <th>Gehört zum Zug</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -26,6 +35,15 @@
                     <td>{{ t.maxZugkraft }}</td>
                     <td>-</td>
                     <td>-</td>
+                    <td>
+                        <!-- Als nächstes wird überprüft, ob der Triebwagen zu einem Zug zugeordnet worden ist. Ist dies
+                             nicht der Fall, so wird "-" ausgegeben, ansonsten wird der Zug ausgegeben. -->
+                        {% if t.zug == None %}
+                            -
+                        {% else %}
+                            {{ t.zug.nr }}
+                        {% endif %}
+                    </td>
                     <td>
                         <a class="btn btn-default" href="{{ url_for('editWaggon', nr=t.nr) }}" role="button">Bearbeiten</a>
                     </td>
@@ -47,6 +65,15 @@
                 <td>-</td>
                 <td>{{ p.sitzanzahl }}</td>
                 <td>{{ p.maximalgewicht }}</td>
+                <td>
+                    <!-- Als nächstes wird überprüft, ob der Personenwagen zu einem Zug zugeordnet worden ist. Ist dies
+                         nicht der Fall, so wird "-" ausgegeben, ansonsten wird der Zug ausgegeben. -->
+                    {% if p.zug == None %}
+                        -
+                    {% else %}
+                        {{ p.zug.nr }}
+                    {% endif %}
+                </td>
                 <td>
                     <a class="btn btn-default" href="{{ url_for('editWaggon', nr=p.nr) }}" role="button">Bearbeiten</a>
                 </td>

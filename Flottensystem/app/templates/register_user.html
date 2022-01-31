@@ -2,12 +2,14 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% if typ == 'Administrator' %}
-    <h2>Neuen Administrator erstellen:</h2>
-    {% elif typ == 'Wartungspersonal' %}
-    <h2>Neues Wartungspersonal erstellen:</h2>
-    {% elif typ == 'Zugpersonal' %}
-    <h2>Neues Zugpersonal erstellen:</h2>
+    <!-- Es wird überprüft, welche Mitarbeiterart von der View Function übergeben wird (also welche Art von Mitarbeiter erstellt
+         werden soll). Je nach dem, wird eine angepasste Überschrift in der Webseite angezeigt. -->
+    {% if mitarbeiterart == 'Administrator' %}
+        <h2>Neuen Administrator erstellen:</h2>
+    {% elif mitarbeiterart == 'Wartungspersonal' %}
+        <h2>Neues Wartungspersonal erstellen:</h2>
+    {% elif mitarbeiterart == 'Zugpersonal' %}
+        <h2>Neues Zugpersonal erstellen:</h2>
     {% endif %}
     <div class="row">
         <div class="col-md-4">

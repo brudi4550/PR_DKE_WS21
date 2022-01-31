@@ -16,6 +16,9 @@
                 {% for w in wartungspersonal %}
                     <div class="checkbox">
                         <label>
+                            <!-- Beim bearbeiten einer Wartung wird überprüft, ob der jeweilige Mitarbeiter bereits in dieser jeweiligen
+                                 Wartung zugeordnet worden ist. Ist dies der Fall, so wird auch die Checkbox mittels "checked" Statement
+                                 als angekreuzt gekennzeichnet. -->
                             <input type="checkbox" value="{{ w.mitarbeiterNr }}" name="WartungspersonalCheckbox"  {% if wartung.ist_zugeordnet(w) %} checked {% endif %}>
                             {{ w.vorname }} {{ w.nachname }}
                         </label>

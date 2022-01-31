@@ -16,8 +16,18 @@
                 {% for p in personenwagen %}
                     <div class="checkbox">
                         <label>
+                            <!-- Beim bearbeiten eines Zuges wird überprüft, ob der jeweilige Personenwagen bereits diesem jeweiligen
+                                 Zug zugeordnet worden ist. Ist dies der Fall, so wird auch die Checkbox mittels "checked" Statement
+                                 als angekreuzt gekennzeichnet. -->
                             <input type="checkbox" value="{{ p.nr }}" name="personenwagenCheckbox" {% if p.zugNr == zug.nr %} checked {% endif %}>
                             {{ p.nr }} (Spurweite: {{ p.spurweite }} mm)
+                            <!-- Zusätzlich wird bei den Personenwaggons angegeben, ob diese einem Zug zugeordnet sind. Sind diese einem anderen
+                                 Zug als der, der gerade bearbeitet wird, zugeordnet, dann wird neben dem Personenwagen "nicht verfügbar" eingetragen.
+                                 Ist der Personenwagen dem momentan zu bearbeitenden Zug zugeordnet, dann steht neben diesem jeweiligen Personenwagen
+                                 "zugeteilt". -->
+                            {% if p.zugNr != None and p.zugNr == zug.nr %} - zugeteilt
+                            {% elif p.zugNr != None %} - nicht verfügbar
+                            {% endif %}
                         </label>
                     </div>
                 {% endfor %}

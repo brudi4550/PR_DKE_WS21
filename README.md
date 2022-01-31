@@ -72,7 +72,39 @@ Bis Februar 2022 ist das Fahrplansystem auch auf diesem VPS deployed:
 52.29.120.183  
 
 ## Flottensystem
-<br>
+Das Flotteninformationssystem stellt dem Fahrplaninformationssystem und dem 
+Ticketinformationssystem Daten zur Verfügung.
+
+###Funktionalitäten
+Das Hinzufügen eines Mitarbeiters, wobei ein Mitarbeiter ein Administrator,
+Wartungspersonal oder Zugpersonal ist.
+
+Erstellen/Bearbeiten/Löschen von Waggons.
+
+Erstellen/Bearbeiten/Löschen von Zügen, wobei bei der Erstellung und Bearbeitung
+darauf geachtet werden muss, dass die Spurweite der einzelnen Waggons einheitlich 
+sind.
+
+Erstellen/Bearbeiten/Löschen von Wartungen, wobei hier darauf geachtet werden muss,
+dass die Mitarbeiter (die der Wartung zugeordnet werden) in dem angegebenen Zeitraum
+keine andere Wartung durchführen. Zusätzlich muss darauf geachtet werden, dass für
+den Zug in dem angegebenen Zeitraum bereits keine Wartung durchgeführt wird.
+
+Übersicht über folgende Daten:
+-Waggons
+-Züge
+-Wartungen
+-Benutzer
+
+Mitarbeiter mit nur lesenden Rechten (also alle Mitarbeiter, außer Administratoren) 
+haben nur Zugriff auf die Übersichtsseiten, jedoch auch nicht auf alle (die Seite
+"Benutzerübersicht" steht ebenfalls nur Administratoren zur Verfügung, der Grund dafür
+wird im Code beschrieben)
+
+API zum Bereitstellen von Zug- und Wartungsdaten. Weitere API's die implementiert wurden,
+sind Waggons und Mitarbeiter (Einzelheiten werden im Code erklärt)
+
+###Sonstiges
 Admin-Login für lokales Flottensystem:<br>
 Mitarbeiter-Email: anil@hotmail.com<br>
 Passwort: test<br>

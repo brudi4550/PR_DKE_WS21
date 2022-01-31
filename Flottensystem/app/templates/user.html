@@ -2,6 +2,10 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <!-- Sind keine Mitarbeiter zum Bearbeiten verfügbar, so wird dies dem User mitgeteilt. Es
+         muss zusätzlich angemerkt werden, dass nur Wartungspersonal- und Zugpersonalmitarbeiter
+         bearbeitbar sind (Administratoren können sich nur selbst bearbeiten). Deswegen werden
+         hier Administratoren nicht ausgegeben. -->
     {% if wartungspersonal == [] and zugpersonal == [] %}
         <p>Keine Mitarbeiter zum bearbeiten verfügbar!</p>
         <a href="{{ url_for('home_admin') }}">Zurück zur Startseite</a>

@@ -29,32 +29,35 @@
         <!-- Handelt es sich beim momentanen User nicht um einen Administrator, so hat dieser nur Leserechte -->
     {% else %}
         <h3>Hier können Sie sich Ihre Daten ansehen:</h3>
-        <table class="table table-hover">
-            <tr>
-                <td>Mitarbeiternummer:</td>
-                <td>{{ current_user.mitarbeiterNr }}</td>
-            <tr>
-                <td>Sozialversicherungsnummer:</td>
-                <td>{{ current_user.svnr }}</td>
-            <tr>
-                <td>Vorname:</td>
-                <td>{{ current_user.vorname }}</td>
-            <tr>
-                <td>Nachname:</td>
-                <td>{{ current_user.nachname }}</td>
-            <tr>
-                <td>Email:</td>
-                <td>{{ current_user.email }}</td>
-            <tr>
-                <td>Beruf:</td>
-                <td>
-                    {% if typ == 'Wartungspersonal' %}
+        <dl>
+            <dt>Mitarbeiternummer</dt>
+            <dd>{{ current_user.mitarbeiterNr }}</dd>
+        </dl>
+        <dl>
+            <dt>Sozialversicherungsnummer</dt>
+            <dd>{{ current_user.svnr }}</dd>
+        </dl>
+        <dl>
+            <dt>Vorname</dt>
+            <dd>{{ current_user.vorname }}</dd>
+        </dl>
+        <dl>
+            <dt>Nachname</dt>
+            <dd>{{ current_user.nachname }}</dd>
+        </dl>
+        <dl>
+            <dt>E-Mail</dt>
+            <dd>{{ current_user.email }}</dd>
+        </dl>
+        <dl>
+            <dt>Beruf</dt>
+            <dd>
+                {% if typ == 'Wartungspersonal' %}
                     {{ typ }}
-                    {% else %}
+                {% else %}
                     {{ current_user.berufsbezeichnung }}
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
+                {% endif %}
+            </dd>
+        </dl>
     {% endif %}
 {% endblock %}

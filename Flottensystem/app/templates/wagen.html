@@ -3,6 +3,8 @@
 {% block app_content %}
     <h2>Neuen Waggon erstellen:</h2>
     <h4>Welche Wagenart wollen sie erstellen?</h4><br>
-    <a href="{{ url_for('createWaggon', typ='Triebwagen') }}">Triebwagen</a><br><br>
-    <a href="{{ url_for('createWaggon', typ='Personenwagen') }}">Personenwagen</a><br><br>
+    <ul class="list-unstyled">
+        <li><a href="{{ url_for('createWaggon', typ='Triebwagen') }}">Triebwagen</a></li><br>
+        <li><a href="{{ url_for('createWaggon', typ='Personenwagen') }}">Personenwagen</a></li>
+    </ul>
 {% endblock %}

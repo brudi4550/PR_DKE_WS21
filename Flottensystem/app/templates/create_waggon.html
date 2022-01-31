@@ -2,9 +2,11 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% if typ == 'Triebwagen' %}
+    <!-- Es wird überprüft, welche Wagenart von der View Function übergeben wird (also welche Wagenart erstellt
+         werden soll). Je nach dem, wird eine angepasste Überschrift in der Webseite angezeigt. -->
+    {% if wagenart == 'Triebwagen' %}
         <h2>Neuen Triebwagen erstellen:</h2>
-    {% elif typ == 'Personenwagen' %}
+    {% elif wagenart == 'Personenwagen' %}
         <h2>Neuen Personenwagen erstellen:</h2>
     {% endif %}
     <div class="row">

@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
     {% if triebwagen == [] and personenwagen == [] %}
@@ -8,18 +7,37 @@
     {% else %}
         <h3>Waggonübersicht:</h3><br>
         {% if triebwagen != [] %}
+            <!-- Bei dieser Übersichtseite wurde folgendes Design verwendet: Hier werden Triebwaggons und Personenwaggons in
+                 getrennten Tabellen dargestellt, da dies die Übersichtlichkeit positiv beeinflusst. Würde man beide Wagenarten
+                 in einer Tabelle darstellen, so haben diese dann jeweils Spalten, die für die jeweilige Wagenart irrelevant ist
+                 und man müsste (genauso wie in der Waggon Bearbeitungsseite "edit_wagen_overview.html") diese irrelevanten Spalten
+                 mit einem "-" kennzeichnen. Da aber eine solche Übersichtsseite für die Mitarbeiter (sowohl Mitarbeiter mit lesendem,
+                 als auch Mitarbeiter mit lesendem und schreibendem Zugriff) eine gewisse Übersichtlichkeit haben sollte, wird hier
+                 auf eine solche Darstellung verzichtet. Die gemeinsame Darstellung beider Wagenarten in einer Tabelle wird in der
+                 Wagen Bearbeitungsseite "edit_wagen_overview" so dargestellt, da es dort nicht das Ziel ist, eine Übersicht über
+                 die verschiedenen Waggons zu geben (für nähere Informationen wird auf diese Wagen Bearbeitungsseite verwiesen). -->
             <h4>Triebwaggons:</h4>
             <table class="table table-hover">
                 <tr>
                     <th>Wagennummer</th>
                     <th>Spurweite [mm]</th>
                     <th>Maximale Zugkraft [Tonnen]</th>
+                    <th>Gehört zum Zug</th>
                 </tr>
                 {% for t in triebwagen %}
                     <tr>
                         <td>{{ t.nr }}</td>
                         <td>{{ t.spurweite }}</td>
                         <td>{{ t.maxZugkraft }}</td>
+                        <!-- Ist ein Waggon einem Zug zugeteilt, dann wird dieser Zug in der jeweiligen Zeile
+                             ausgegeben. Ist ein Waggon noch keinem Zug zugeteilt, so wird "-" ausgegeben. -->
+                        <td>
+                            {% if t.zug == None %}
+                                -
+                            {% else %}
+                                {{ t.zug.nr }}
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </table>
@@ -32,6 +50,7 @@
                     <th>Spurweite [mm]</th>
                     <th>Sitzanzahl</th>
                     <th>Maximalgewicht [Tonnen]</th>
+                    <th>Gehört zum Zug</th>
                 </tr>
                 {% for p in personenwagen %}
                     <tr>
@@ -39,6 +58,13 @@
                         <td>{{ p.spurweite }}</td>
                         <td>{{ p.sitzanzahl }}</td>
                         <td>{{ p.maximalgewicht }}</td>
+                        <td>
+                            {% if p.zug == None %}
+                                -
+                            {% else %}
+                                {{ p.zug.nr }}
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </table>

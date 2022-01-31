@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h4>Hallo, {{ current_user.vorname }}! Wählen Sie eine Option aus:</h4>
+    <!-- Es wird eine Variable "typ" von der View Function übergeben. Hier ist eingespeichert, um welche Art von User es
+         sich beim momentanen User (current_user) handelt. Ist dieser ein Administrator, so hat dieser mehr Auswahlmöglichkeiten. -->
+    {% if typ == 'Administrator' %}
+        <dl>
+            <dt>Waggons</dt>
+            <dd> <a href="{{ url_for('waggon') }}">Neue Waggons erstellen</a> </dd>
+            <dd> <a href="{{ url_for('updateWaggon') }}">Bestehende Waggons bearbeiten/löschen</a> </dd>
+        </dl>
+        <dl>
+            <dt>Züge</dt>
+            <dd> <a href="{{ url_for('createTrain') }}">Neuen Zug erstellen</a> </dd>
+            <dd> <a href="{{ url_for('updateTrain') }}">Bestehende Züge bearbeiten/löschen</a> </dd>
+        </dl>
+        <dl>
+            <dt>Benutzer</dt>
+            <dd> <a href="{{ url_for('register') }}">Neuen Benutzer erstellen</a> </dd>
+            <dd> <a href="{{ url_for('updateUser') }}">Bestehende Benutzer bearbeiten/löschen</a> </dd>
+        </dl>
+        <dl>
+            <dt>Wartungen</dt>
+            <dd> <a href="{{ url_for('addMaintenance') }}">Neue Wartung hinzufügen</a> </dd>
+            <dd> <a href="{{ url_for('updateMaintenance') }}">Bestehende Wartungen bearbeiten/löschen</a> </dd>
+        </dl>
+    {% endif %}
+    <dl>
+        <dt>Übersichten</dt>
+        <dd> <a href="{{ url_for('waggonOverview') }}">Waggonübersicht</a> </dd>
+        <dd> <a href="{{ url_for('trainOverview') }}">Zugübersicht</a> </dd>
+        {% if typ == 'Administrator' %}
+        <dd> <a href="{{ url_for('userOverview') }}">Benutzerübersicht</a> </dd>
+        {% endif %}
+        <dd> <a href="{{ url_for('wartungOverview') }}">Wartungsübersicht</a> </dd>
+    </dl>
+{% endblock %}
